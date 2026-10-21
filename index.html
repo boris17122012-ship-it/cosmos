@@ -8,21 +8,11 @@
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
     <style>
-        :root {
-            --bg: #000000;
-            --card: rgba(15, 15, 15, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --text: #ffffff;
-            --muted: #888888;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --bg: #000; --card: rgba(15,15,15,0.7); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-        
-        /* Звездный фон */
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-
-        /* Прелоадер */
-        #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
+        #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
         .orbit-loader { width: 80px; height: 80px; position: relative; margin-bottom: 30px; }
         .orbit-loader::before, .orbit-loader::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
         .orbit-loader::before { inset: 0; border-top-color: #fff; animation: spin 1.5s linear infinite; }
@@ -31,46 +21,30 @@
         .load-bar-container { width: 150px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         .load-bar-fill { width: 0%; height: 100%; background: #fff; transition: width 0.3s; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Интерфейс */
-        #app { opacity: 0; transition: opacity 0.5s ease; }
+        #app { opacity: 0; transition: opacity 0.5s; }
         .header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 18px; font-weight: 800; letter-spacing: 2px; }
         .balances { display: flex; gap: 10px; }
         .bal { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; backdrop-filter: blur(10px); }
         .bal svg { width: 14px; height: 14px; fill: #fff; }
-
-        /* Кейсы */
         .content { padding: 20px; max-width: 600px; margin: 0 auto; }
         .sec-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: 2px; color: var(--muted); }
         .grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 80px; }
-        
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 15px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(20px); cursor: pointer; transition: 0.2s; }
         .card:active { transform: scale(0.97); }
-        .card.premium { border-color: rgba(255,255,255,0.3); box-shadow: 0 0 20px rgba(255,255,255,0.05); }
-        
-        /* Картинка кейса */
-        .c-img { width: 70px; height: 70px; object-fit: contain; margin-right: 15px; flex-shrink: 0; }
-        
+        .card.premium { border-color: rgba(255,255,255,0.3); }
+        .c-img { width: 60px; height: 60px; object-fit: contain; margin-right: 15px; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
         .c-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
         .c-name { font-size: 15px; font-weight: 700; }
         .c-desc { font-size: 11px; color: var(--muted); }
-        
         .c-prices { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .c-p-stars { font-size: 15px; font-weight: 700; }
         .c-p-ton { font-size: 11px; color: #0098EA; font-weight: 600; }
-
-        /* Навигация */
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #000 60%, transparent); z-index: 50; max-width: 600px; left: 50%; transform: translateX(-50%); }
-        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; backdrop-filter: blur(10px ); transition4: 0.px2s;; letter-spacing: 1px; }
-        . }
-nav-btn:active { background: rgba(255,255,255,0.1); }
-
-        /* Модальное окно */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95       ); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; letter-spacing: 1px; }
+        .nav-btn:active { background: rgba(255,255,255,0.1); }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal.show { display: flex; opacity: 1; }
-        
-        /* Рулетка */
         .roulette-box { width: 100%; max-width: 600px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .r-track { width: 100%; height: 140px; background: rgba(20,20,20,0.9); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; position: relative; display: flex; align-items: center; }
         .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 20px; transition: transform 0.1s linear; }
@@ -78,64 +52,49 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
         .r-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
         .r-item span { font-size: 11px; font-weight: 600; color: var(--muted); }
         .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px #fff; }
-        
-        /* Окно оплаты */
         .pay-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; }
         .pay-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; }
         .pay-options { display: flex; flex-direction: column; gap: 10px; }
         .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 18px; font-size: 15px; font-weight: 600; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
         .pay-btn:active { background: rgba(255,255,255,0.1); }
-        
-        /* Результат */
         .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 400px; }
-        .result-img { width: 150px; height: 150px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(255,255,255,0.2)); }
+        .result-img { width: 150px; height: 150px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(255,255,255,0.3)); }
         .result-name { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
         .result-btn { background: #fff; color: #000; border: none; border-radius: 30px; padding: 16px; width: 100%; font-size: 15px; font-weight: 800; margin-top: 30px; cursor: pointer; letter-spacing: 1px; }
-        
-        /* Коллекция */
         #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
         .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .inv-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
-        .inv-name { font-size: 13px; font-weight: 700; margin-bottom: .inv-price { font-size: 11px; color: var(--muted); }
+        .inv-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .inv-price { font-size: 11px; color: var(--muted); }
     </style>
 </head>
 <body>
-
     <div id="preloader">
         <div class="orbit-loader"></div>
         <div class="load-text" id="loadText">Синхронизация...</div>
         <div class="load-bar-container"><div class="load-bar-fill" id="loadBar"></div></div>
     </div>
-
     <div id="app">
         <canvas id="stars-canvas"></canvas>
-        
         <div class="header">
             <div class="logo">COSMIC VAULT</div>
             <div class="balances">
-                <div class="bal">
-                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <span id="balStars">0</span>
-                </div>
+                <div class="bal"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span id="balStars">0</span></div>
             </div>
         </div>
-
         <div class="content" id="mainContent">
             <div class="sec-title">ВЫБЕРИТЕ КЕЙС</div>
             <div class="grid" id="casesGrid"></div>
         </div>
-
         <div class="content" id="invContent" style="display:none;">
             <div class="sec-title">ВАША КОЛЛЕКЦИЯ</div>
             <div id="invList"></div>
         </div>
-
         <div class="nav">
             <button class="nav-btn" onclick="switchTab('cases')">КЕЙСЫ</button>
             <button class="nav-btn" onclick="switchTab('inv')">КОЛЛЕКЦИЯ</button>
         </div>
     </div>
-
     <div class="modal" id="modal">
         <div class="pay-box" id="payStep">
             <div class="pay-title" id="modalTitle">ОТКРЫТИЕ</div>
@@ -143,10 +102,7 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
             <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:13px; letter-spacing:1px;" onclick="closeModal()">ОТМЕНА</button>
         </div>
         <div class="roulette-box" id="spinStep" style="display:none;">
-            <div class="r-track">
-                <div class="r-marker"></div>
-                <div class="r-items" id="rItems"></div>
-            </div>
+            <div class="r-track"><div class="r-marker"></div><div class="r-items" id="rItems"></div></div>
         </div>
         <div class="result-box" id="resultStep" style="display:none;">
             <img src="" class="result-img" id="resImg">
@@ -155,56 +111,49 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
             <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ В КОЛЛЕКЦИЮ</button>
         </div>
     </div>
-
 <script>
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100; 
     
-    // Прямые ссылки на картинки реальных NFT-подарков
-    const nftImages = {
-        heart: "https://nft.fragment.com/gift/plushpepe-12345-100x100.webp", // Временно ставим заглушки из фрагмента (в проде лучше свои)
-        // Так как прямые ссылки с Fragment могут блокироваться, используем стилизованные под подарки картинки (ковры/шары/сердца)
-        heartReal: "https://i.ibb.co/6PZ4M4v/heart.png", 
-        bear: "https://i.ibb.co/3s6H4X1/bear.png",
-        cake: "https://i.ibb.co/1K5g5bB/cake.png",
-        star: "https://i.ibb.co/0y4Z7sP/star.png",
-        moon: "https://i.ibb.co/9q6H4X1/moon.png",
-        gift: "https://i.ibb.co/5xZ4M4v/gift.png",
-        diamond: "https://i.ibb.co/7Q4Z7sP/diamond.png",
-        planet: "https://i.ibb.co/2q6H4X1/planet.png",
-        pepe: "https://i.ibb.co/8xZ4M4v/pepe.png",
-        cap: "https://i.ibb.co/6PZ4M4v/cap.png",
-        blackhole: "https://i.ibb.co/3s6H4X1/blackhole.png",
-        supernova: "https://i.ibb.co/1K5g5bB/supernova.png"
+    // ТУТ ТВОИ КАРТИНКИ. ЕСЛИ ОНИ В КОРНЕ РЕПОЗИТОРИЯ - УБЕРИ "img/"
+    const imgPath = "img/"; 
+    const imgs = {
+        p1: imgPath + "IMG_6767.jpeg",
+        p2: imgPath + "IMG_6766.jpeg",
+        p3: imgPath + "IMG_6765.jpeg",
+        p4: imgPath + "IMG_6763.jpeg",
+        p5: imgPath + "IMG_6764.jpeg",
+        p6: imgPath + "IMG_6761.jpeg",
+        p7: imgPath + "IMG_6760.jpeg",
+        p8: imgPath + "IMG_6758.jpeg",
+        p9: imgPath + "IMG_6757.jpeg",
+        p10: imgPath + "IMG_6756.jpeg",
+        p11: imgPath + "IMG_6755.jpeg"
     };
 
-    // Кейсы с картинками (космические капсулы)
     const cases = [
-        { id: 1, name: "ЛУННАЯ ОРБИТА", desc: "Базовые артефакты", price: 15, premium: false, max: 25, img: "https://i.ibb.co/9q6H4X1/moon.png" },
-        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Редкие частицы", price: 50, premium: false, max: 80, img: "https://i.ibb.co/2q6H4X1/planet.png" },
-        { id: 3, name: "ТУМАННОСТЬ АНДРОМЕДЫ", desc: "Древние реликвии", price: 150, premium: true, max: 250, img: "https://i.ibb.co/5xZ4M4v/gift.png" },
-        { id: 4, name: "МЛЕЧНЫЙ ПУТЬ", desc: "Эпические NFT", price: 300, premium: true, max: 400, img: "https://i.ibb.co/0y4Z7sP/star.png" },
-        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный дроп", price: 500, premium: true, max: 1000, img: "https://i.ibb.co/3s6H4X1/blackhole.png" }
+        { id: 1, name: "ЛУННАЯ ОРБИТА", desc: "Базовые артефакты", price: 15, premium: false, max: 25, img: imgs.p1 },
+        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Редкие частицы", price: 50, premium: false, max: 80, img: imgs.p2 },
+        { id: 3, name: "ТУМАННОСТЬ АНДРОМЕДЫ", desc: "Древние реликвии", price: 150, premium: true, max: 250, img: imgs.p3 },
+        { id: 4, name: "МЛЕЧНЫЙ ПУТЬ", desc: "Эпические NFT", price: 300, premium: true, max: 400, img: imgs.p4 },
+        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный дроп", price: 500, premium: true, max: 1000, img: imgs.p5 }
     ];
 
-    // Сам пул подарков с картинками
     const nftPool = [
-        { name: "Tiny Heart", val: 10, icon: nftImages.heartReal },
-        { name: "Space Bear", val: 15, icon: nftImages.bear },
-        { name: "Cosmic Cake", val: 20, icon: nftImages.cake },
-        { name: "Star", val: 25, icon: nftImages.star },
-        { name: "Moon Stone", val: 30, icon: nftImages.moon },
-        { name: "Gift Box", val: 40, icon: nftImages.gift },
-        { name: "Diamond Ring", val: 60, icon: nftImages.diamond },
-        { name: "Planet Core", val: 80, icon: nftImages.planet },
-        { name: "Plush Pepe", val: 120, icon: nftImages.pepe },
-        { name: "Durov's Cap", val: 180, icon: nftImages.cap },
-        { name: "Event Horizon", val: 250, icon: nftImages.blackhole },
-        { name: "Supernova", val: 400, icon: nftImages.supernova }
+        { name: "Tiny Heart", val: 10, icon: imgs.p6 },
+        { name: "Space Bear", val: 15, icon: imgs.p7 },
+        { name: "Cosmic Cake", val: 20, icon: imgs.p8 },
+        { name: "Star", val: 25, icon: imgs.p9 },
+        { name: "Gift Box", val: 40, icon: imgs.p10 },
+        { name: "Diamond Ring", val: 60, icon: imgs.p11 },
+        { name: "Planet Core", val: 80, icon: imgs.p1 },
+        { name: "Plush Pepe", val: 120, icon: imgs.p2 },
+        { name: "Durov's Cap", val: 180, icon: imgs.p3 },
+        { name: "Event Horizon", val: 250, icon: imgs.p4 }
     ];
 
     let userStars = 1000;
-    let inventory = JSON.parse(localStorage.getItem('cv_inv_v4')) || [];
+    let inventory = JSON.parse(localStorage.getItem('cv_inv_v6')) || [];
     let currentCase = null;
     let isSpinning = false;
     let tonConnectUI = null;
@@ -248,43 +197,26 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
             div.className = 'card' + (c.premium ? ' premium' : '');
             div.onclick = () => openCase(c);
             div.innerHTML = `
-                <img src="${c.img}" class="c-img" alt="${c.name}">
-                <div class="c-info">
-                    <div class="c-name">${c.name}</div>
-                    <div class="c-desc">${c.desc}</div>
-                </div>
-                <div class="c-prices">
-                    <div class="c-p-stars">${c.price} ⭐</div>
-                    <div class="c-p-ton">${(c.price / TON_RATE).toFixed(2)} TON</div>
-                </div>
+                <img src="${c.img}" class="c-img">
+                <div class="c-info"><div class="c-name">${c.name}</div><div class="c-desc">${c.desc}</div></div>
+                <div class="c-prices"><div class="c-p-stars">${c.price} ⭐</div><div class="c-p-ton">${(c.price / TON_RATE).toFixed(2)} TON</div></div>
             `;
             g.appendChild(div);
         });
     }
 
     function updateUI() { document.getElementById('balStars').textContent = userStars; }
-
     function switchTab(tab) {
-        if(tab === 'cases') {
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('invContent').style.display = 'none';
-        } else {
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('invContent').style.display = 'block';
-        }
+        document.getElementById('mainContent').style.display = tab === 'cases' ? 'block' : 'none';
+        document.getElementById('invContent').style.display = tab === 'inv' ? 'block' : 'none';
     }
 
     function openCase(c) {
         currentCase = c;
         document.getElementById('modalTitle').textContent = c.name;
-        const opts = document.getElementById('payOptions');
-        opts.innerHTML = `
-            <button class="pay-btn" onclick="payStars()">
-                <span>ЗВЕЗДЫ</span><span>${c.price} ⭐</span>
-            </button>
-            <button class="pay-btn" onclick="payTon()">
-                <span>TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span>
-            </button>
+        document.getElementById('payOptions').innerHTML = `
+            <button class="pay-btn" onclick="payStars()"><span>ЗВЕЗДЫ</span><span>${c.price} ⭐</span></button>
+            <button class="pay-btn" onclick="payTon()"><span>TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span></button>
         `;
         document.getElementById('payStep').style.display = 'block';
         document.getElementById('spinStep').style.display = 'none';
@@ -307,10 +239,9 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
     async function payTon() {
         if(!tonConnectUI) return alert("Ошибка TON");
         const amountTon = currentCase.price / TON_RATE;
-        const invoiceId = 'INV_' + Date.now();
         try {
             const { beginCell } = TON_CORE;
-            const cell = beginCell().storeUint(0, 32).storeStringTail(invoiceId).endCell();
+            const cell = beginCell().storeUint(0, 32).storeStringTail('INV_' + Date.now()).endCell();
             await tonConnectUI.sendTransaction({
                 validUntil: Math.floor(Date.now() / 1000) + 300,
                 messages: [{ address: RECEIVER, amount: String(Math.floor(amountTon * 1e9)), payload: cell.toBoc().toString('base64') }]
@@ -323,35 +254,22 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
         document.getElementById('payStep').style.display = 'none';
         document.getElementById('spinStep').style.display = 'block';
         isSpinning = true;
-
         const validPool = nftPool.filter(i => i.val <= currentCase.max);
         const prize = validPool[Math.floor(Math.random() * validPool.length)];
-
         const track = document.getElementById('rItems');
-        track.innerHTML = '';
         let itemsHtml = '';
-        
         for(let i=0; i<20; i++) {
             let item = validPool[Math.floor(Math.random() * validPool.length)];
             if(i === 15) item = prize;
-            
-            itemsHtml += `
-                <div class="r-item">
-                    <img src="${item.icon}">
-                    <span>${item.val} ⭐</span>
-                </div>
-            `;
+            itemsHtml += `<div class="r-item"><img src="${item.icon}"><span>${item.val} ⭐</span></div>`;
         }
         track.innerHTML = itemsHtml;
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
-
         setTimeout(() => {
             track.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.7, 0.1, 1)';
             const trackWidth = document.querySelector('.r-track').offsetWidth;
-            const itemCenter = (15 * 110) + 50; 
-            const windowCenter = trackWidth / 2;
-            const moveTo = -(itemCenter - windowCenter);
+            const moveTo = -(((15 * 110) + 50) - (trackWidth / 2));
             track.style.transform = `translateX(${moveTo}px)`;
             setTimeout(() => { showResult(prize); }, 3600);
         }, 100);
@@ -361,13 +279,11 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
         isSpinning = false;
         document.getElementById('spinStep').style.display = 'none';
         document.getElementById('resultStep').style.display = 'flex';
-        
         document.getElementById('resImg').src = prize.icon;
         document.getElementById('resName').textContent = prize.name;
         document.getElementById('resPrice').textContent = prize.val + " ⭐";
-
         inventory.push(prize);
-        localStorage.setItem('cv_inv_v4', JSON.stringify(inventory));
+        localStorage.setItem('cv_inv_v6', JSON.stringify(inventory));
         renderInv();
     }
 
@@ -381,11 +297,7 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
         inventory.forEach(item => {
             const div = document.createElement('div');
             div.className = 'inv-card';
-            div.innerHTML = `
-                <img src="${item.icon}">
-                <div class="inv-name">${item.name}</div>
-                <div class="inv-price">${item.val} ⭐</div>
-            `;
+            div.innerHTML = `<img src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} ⭐</div>`;
             g.appendChild(div);
         });
     }
@@ -395,9 +307,7 @@ nav-btn:active { background: rgba(255,255,255,0.1); }
         const ctx = canvas.getContext('2d');
         let w = canvas.width = window.innerWidth;
         let h = canvas.height = window.innerHeight;
-        const stars = Array.from({length: 80}).map(() => ({
-            x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.5, v: Math.random() * 0.5 + 0.1
-        }));
+        const stars = Array.from({length: 80}).map(() => ({ x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.5, v: Math.random() * 0.5 + 0.1 }));
         function render() {
             ctx.clearRect(0, 0, w, h);
             stars.forEach(st => {
