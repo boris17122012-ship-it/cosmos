@@ -10,11 +10,10 @@
     <style>
         :root {
             --bg: #000000;
-            --card: rgba(20, 20, 20, 0.6);
+            --card: rgba(15, 15, 15, 0.7);
             --border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
             --muted: #888888;
-            --accent: #ffffff;
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -31,7 +30,6 @@
         .load-text { font-size: 12px; letter-spacing: 3px; color: #666; text-transform: uppercase; margin-bottom: 10px; }
         .load-bar-container { width: 150px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         .load-bar-fill { width: 0%; height: 100%; background: #fff; transition: width 0.3s; }
-
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Интерфейс */
@@ -44,57 +42,60 @@
 
         /* Кейсы */
         .content { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .sec-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: 1px; }
-        .grid { display: flex; flex-direction: column; gap: 15px; }
+        .sec-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: 2px; color: var(--muted); }
+        .grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 80px; }
         
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 20px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(20px); cursor: pointer; transition: border-color 0.2s, transform 0.1s; }
-        .card:active { transform: scale(0.98); }
-        .card.premium { border-color: rgba(255,255,255,0.4); box-shadow: 0 0 20px rgba(255,255,255,0.05); }
-        .c-info { display: flex; flex-direction: column; gap: 5px; }
-        .c-name { font-size: 16px; font-weight: 700; }
-        .c-desc { font-size: 12px; color: var(--muted); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(20px); cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.97); }
+        .card.premium { border-color: rgba(255,255,255,0.3); box-shadow: 0 0 20px rgba(255,255,255,0.05); }
+        
+        .c-icon { width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
+        .c-icon svg { width: 24px; height: 24px; fill: #fff; }
+        
+        .c-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .c-name { font-size: 15px; font-weight: 700; }
+        .c-desc { font-size: 11px; color: var(--muted); }
+        
         .c-prices { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        .c-p-stars { font-size: 16px; font-weight: 700; }
-        .c-p-ton { font-size: 12px; color: #0098EA; font-weight: 600; }
+        .c-p-stars { font-size: 15px; font-weight: 700; }
+        .c-p-ton { font-size: 11px; color: #0098EA; font-weight: 600; }
 
-        /* Кнопка Навигации (Снизу) */
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #000 60%, transparent); z-index: 50; }
-        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 15px; text-align: center; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; }
+        /* Навигация (Снизу) */
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #000 60%, transparent); z-index: 50; max-width: 600px; left: 50%; transform: translateX(-50%); }
+        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; letter-spacing: 1px; }
         .nav-btn:active { background: rgba(255,255,255,0.1); }
 
         /* Модальное окно */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal.show { display: flex; opacity: 1; }
         
         .roulette-box { width: 100%; max-width: 600px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .r-track { width: 100%; height: 160px; background: rgba(20,20,20,0.8); border: 1px solid var(--border); border-radius: 30px; overflow: hidden; position: relative; display: flex; align-items: center; }
+        .r-track { width: 100%; height: 140px; background: rgba(20,20,20,0.9); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; position: relative; display: flex; align-items: center; }
         .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 20px; transition: transform 0.1s linear; }
-        .r-item { width: 120px; height: 120px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-        .r-item img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
-        .r-item span { font-size: 12px; font-weight: 600; }
+        .r-item { width: 100px; height: 100px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .r-item svg { width: 40px; height: 40px; fill: #fff; margin-bottom: 5px; }
+        .r-item span { font-size: 11px; font-weight: 600; color: var(--muted); }
+        .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px #fff; }
         
-        .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.5); z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px #fff; }
-        
-        /* Оверлей оплаты */
-        .pay-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 100%; max-width: 400px; text-align: center; backdrop-filter: blur(20px); }
-        .pay-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+        /* Окно оплаты */
+        .pay-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; }
+        .pay-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; }
         .pay-options { display: flex; flex-direction: column; gap: 10px; }
-        .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; padding: 18px; font-size: 16px; font-weight: 600; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
+        .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 18px; font-size: 15px; font-weight: 600; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
         .pay-btn:active { background: rgba(255,255,255,0.1); }
-        .pay-btn span:last-child { color: var(--muted); font-size: 14px; }
-
+        
         /* Результат */
-        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .result-img { width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid #fff; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
-        .result-name { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
-        .result-btn { background: #fff; color: #000; border: none; border-radius: 30px; padding: 15px 40px; font-size: 16px; font-weight: 700; margin-top: 20px; cursor: pointer; }
+        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 400px; }
+        .result-icon { width: 140px; height: 140px; background: #000; border-radius: 50%; border: 2px solid #fff; padding: 30px; margin-bottom: 20px; box-shadow: 0 0 40px rgba(255,255,255,0.15); }
+        .result-name { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .result-btn { background: #fff; color: #000; border: none; border-radius: 30px; padding: 16px; width: 100%; font-size: 15px; font-weight: 800; margin-top: 30px; cursor: pointer; letter-spacing: 1px; }
         
         /* Коллекция */
-        #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding-bottom: 80px; }
-        .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .inv-card img { width: 60px; height: 60px; margin-bottom: 10px; }
-        .inv-name { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
-        .inv-price { font-size: 12px; color: var(--muted); }
+        #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
+        .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .inv-card svg { width: 50px; height: 50px; fill: #fff; margin-bottom: 10px; }
+        .inv-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .inv-price { font-size: 11px; color: var(--muted); }
     </style>
 </head>
 <body>
@@ -102,7 +103,7 @@
     <!-- Прелоадер -->
     <div id="preloader">
         <div class="orbit-loader"></div>
-        <div class="load-text" id="loadText">Инициализация...</div>
+        <div class="load-text" id="loadText">Синхронизация...</div>
         <div class="load-bar-container"><div class="load-bar-fill" id="loadBar"></div></div>
     </div>
 
@@ -121,7 +122,6 @@
         </div>
 
         <div class="content" id="mainContent">
-            <!-- Здесь будут кейсы -->
             <div class="sec-title">ВЫБЕРИТЕ КЕЙС</div>
             <div class="grid" id="casesGrid"></div>
         </div>
@@ -139,74 +139,74 @@
 
     <!-- Модальное окно -->
     <div class="modal" id="modal">
-        
-        <!-- Шаг 1: Оплата -->
+        <!-- Оплата -->
         <div class="pay-box" id="payStep">
             <div class="pay-title" id="modalTitle">ОТКРЫТИЕ</div>
             <div class="pay-options" id="payOptions"></div>
-            <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:14px;" onclick="closeModal()">Отмена</button>
+            <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:13px; letter-spacing:1px;" onclick="closeModal()">ОТМЕНА</button>
         </div>
-
-        <!-- Шаг 2: Рулетка -->
+        <!-- Рулетка -->
         <div class="roulette-box" id="spinStep" style="display:none;">
             <div class="r-track">
                 <div class="r-marker"></div>
                 <div class="r-items" id="rItems"></div>
             </div>
         </div>
-
-        <!-- Шаг 3: Результат -->
+        <!-- Результат -->
         <div class="result-box" id="resultStep" style="display:none;">
-            <img src="" class="result-img" id="resImg">
+            <div class="result-icon" id="resIcon"></div>
             <div class="result-name" id="resName">Название</div>
             <div style="color:var(--muted); font-size:14px;" id="resPrice">0 ⭐</div>
-            <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ</button>
+            <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ В КОЛЛЕКЦИЮ</button>
         </div>
-
     </div>
 
 <script>
-    // ============ НАСТРОЙКИ И ДАННЫЕ ============
+    // ============ НАСТРОЙКИ ============
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
-    const TON_RATE = 100; // 1 TON = 100 ⭐ (курс для расчета)
+    const TON_RATE = 100; // 1 TON = 100 ⭐
     
-    // Используем открытые SVG иконки для стиля (без цветных эмодзи)
+    // Реальные NFT Telegram Fragment (черно-белые SVG иконки для минимализма)
     const icons = {
-        star: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>",
-        moon: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg>",
-        gift: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'><polyline points='20 12 20 22 4 22 4 12'/><rect x='2' y='7' width='20' height='5'/><line x1='12' y1='22' x2='12' y2='7'/><path d='M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z'/><path d='M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z'/></svg>",
-        diamond: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'><polygon points='12 2 22 8.5 12 22 2 8.5 12 2'/><line x1='2' y1='8.5' x2='22' y2='8.5'/><line x1='12' y1='22' x2='12' y2='8.5'/></svg>",
-        planet: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'><circle cx='12' cy='12' r='7'/><ellipse cx='12' cy='12' rx='11' ry='4' transform='rotate(-30 12 12)'/></svg>",
-        blackhole: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'><circle cx='12' cy='12' r='10'/><circle cx='12' cy='12' r='3' fill='white'/></svg>"
+        heart: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        bear: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="7"/><circle cx="9" cy="9" r="1.5" fill="white"/><circle cx="15" cy="9" r="1.5" fill="white"/><ellipse cx="12" cy="14" rx="2" ry="1" fill="white"/></svg>`,
+        cake: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M12 2v4M8 6h8M6 22v-6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6M4 22h16"/></svg>`,
+        star: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+        gift: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>`,
+        diamond: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><polygon points="12 2 22 8.5 12 22 2 8.5 12 2"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>`,
+        planet: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="7"/><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-30 12 12)"/></svg>`,
+        moon: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+        blackhole: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="white"/></svg>`,
+        crown: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M2 20h20M4 20V8l4 4 4-6 4 6 4-4v12"/></svg>`
     };
 
-    // Реальные NFT Telegram Fragment (упрощенные названия)
+    // Пул реальных подарков (Названия с Fragment)
     const nftPool = [
-        { name: "Tiny Heart", val: 10, icon: icons.star },
-        { name: "Space Bear", val: 15, icon: icons.moon },
-        { name: "Cosmic Cake", val: 20, icon: icons.gift },
-        { name: "Star Fragment", val: 25, icon: icons.star },
+        { name: "Tiny Heart", val: 10, icon: icons.heart },
+        { name: "Space Bear", val: 15, icon: icons.bear },
+        { name: "Cosmic Cake", val: 20, icon: icons.cake },
+        { name: "Star", val: 25, icon: icons.star },
         { name: "Moon Stone", val: 30, icon: icons.moon },
         { name: "Gift Box", val: 40, icon: icons.gift },
         { name: "Diamond Ring", val: 60, icon: icons.diamond },
         { name: "Planet Core", val: 80, icon: icons.planet },
-        { name: "Nebula Dust", val: 100, icon: icons.star },
-        { name: "Event Horizon", val: 150, icon: icons.blackhole },
-        { name: "Galaxy Pass", val: 250, icon: icons.planet },
+        { name: "Plush Pepe", val: 120, icon: icons.bear },
+        { name: "Durov's Cap", val: 180, icon: icons.crown },
+        { name: "Event Horizon", val: 250, icon: icons.blackhole },
         { name: "Supernova", val: 400, icon: icons.star }
     ];
 
-    // Кейсы (цены 15 - 500)
+    // Кейсы (связанные с космосом, цены от 15 до 500)
     const cases = [
-        { id: 1, name: "ЛУННАЯ ОРБИТА", desc: "Базовые артефакты", price: 15, premium: false, max: 25 },
-        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Редкие частицы", price: 50, premium: false, max: 80 },
-        { id: 3, name: "ТУМАННОСТЬ АНДРОМЕДЫ", desc: "Древние реликвии", price: 150, premium: true, max: 250 },
-        { id: 4, name: "МЛЕЧНЫЙ ПУТЬ", desc: "Эпические NFT", price: 300, premium: true, max: 400 },
-        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный дроп", price: 500, premium: true, max: 1000 }
+        { id: 1, name: "ЛУННАЯ ОРБИТА", desc: "Базовые артефакты", price: 15, premium: false, max: 25, icon: icons.moon },
+        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Редкие частицы", price: 50, premium: false, max: 80, icon: icons.planet },
+        { id: 3, name: "ТУМАННОСТЬ АНДРОМЕДЫ", desc: "Древние реликвии", price: 150, premium: true, max: 250, icon: icons.gift },
+        { id: 4, name: "МЛЕЧНЫЙ ПУТЬ", desc: "Эпические NFT", price: 300, premium: true, max: 400, icon: icons.star },
+        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный дроп", price: 500, premium: true, max: 1000, icon: icons.blackhole }
     ];
 
-    let userStars = 1000; // Стартовый баланс для теста
-    let inventory = JSON.parse(localStorage.getItem('cv_inv_v2')) || [];
+    let userStars = 1000;
+    let inventory = JSON.parse(localStorage.getItem('cv_inv_v3')) || [];
     let currentCase = null;
     let isSpinning = false;
     let tonConnectUI = null;
@@ -215,16 +215,11 @@
     const tg = window.Telegram?.WebApp;
     if(tg) { tg.expand(); tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000'); }
 
-    // Прелоадер (3 секунды)
     let loadP = 0;
     const loadInterval = setInterval(() => {
         loadP += Math.random() * 15;
         if(loadP > 100) loadP = 100;
         document.getElementById('loadBar').style.width = loadP + '%';
-        
-        if(loadP > 30) document.getElementById('loadText').textContent = "Синхронизация...";
-        if(loadP > 70) document.getElementById('loadText').textContent = "Подключение...";
-        
         if(loadP === 100) {
             clearInterval(loadInterval);
             setTimeout(() => {
@@ -239,21 +234,16 @@
         updateUI();
         renderCases();
         renderInv();
-        initTon();
-        drawStars();
-    }
-
-    // ============ TON ============
-    function initTon() {
         try {
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
                 manifestUrl: location.origin + '/tonconnect-manifest.json',
                 uiPreferences: { theme: 'DARK' }
             });
-        } catch(e) { console.warn(e); }
+        } catch(e) { console.log(e); }
+        drawStars();
     }
 
-    // ============ ОТРИСОВКА ============
+    // ============ ОТРИСОВКА КЕЙСОВ ============
     function renderCases() {
         const g = document.getElementById('casesGrid');
         g.innerHTML = '';
@@ -262,6 +252,7 @@
             div.className = 'card' + (c.premium ? ' premium' : '');
             div.onclick = () => openCase(c);
             div.innerHTML = `
+                <div class="c-icon">${c.icon}</div>
                 <div class="c-info">
                     <div class="c-name">${c.name}</div>
                     <div class="c-desc">${c.desc}</div>
@@ -275,9 +266,7 @@
         });
     }
 
-    function updateUI() {
-        document.getElementById('balStars').textContent = userStars;
-    }
+    function updateUI() { document.getElementById('balStars').textContent = userStars; }
 
     function switchTab(tab) {
         if(tab === 'cases') {
@@ -289,23 +278,19 @@
         }
     }
 
-    // ============ МОДАЛКА И ОПЛАТА ============
+    // ============ ОПЛАТА ============
     function openCase(c) {
         currentCase = c;
         document.getElementById('modalTitle').textContent = c.name;
         const opts = document.getElementById('payOptions');
-        
         opts.innerHTML = `
             <button class="pay-btn" onclick="payStars()">
-                <span>Оплатить звездами</span>
-                <span>${c.price} ⭐</span>
+                <span>ЗВЕЗДЫ</span><span>${c.price} ⭐</span>
             </button>
             <button class="pay-btn" onclick="payTon()">
-                <span>Оплатить TON</span>
-                <span>${(c.price / TON_RATE).toFixed(2)} TON</span>
+                <span>TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span>
             </button>
         `;
-        
         document.getElementById('payStep').style.display = 'block';
         document.getElementById('spinStep').style.display = 'none';
         document.getElementById('resultStep').style.display = 'none';
@@ -328,50 +313,39 @@
         if(!tonConnectUI) return alert("Ошибка TON");
         const amountTon = currentCase.price / TON_RATE;
         const invoiceId = 'INV_' + Date.now();
-        
         try {
             const { beginCell } = TON_CORE;
             const cell = beginCell().storeUint(0, 32).storeStringTail(invoiceId).endCell();
-            
             await tonConnectUI.sendTransaction({
                 validUntil: Math.floor(Date.now() / 1000) + 300,
-                messages: [{
-                    address: RECEIVER,
-                    amount: String(Math.floor(amountTon * 1e9)),
-                    payload: cell.toBoc().toString('base64')
-                }]
+                messages: [{ address: RECEIVER, amount: String(Math.floor(amountTon * 1e9)), payload: cell.toBoc().toString('base64') }]
             });
-            
-            // После отправки запускаем (для теста можноАД сразу, в реальности нужен опрос API)
             startRoulette();
-        } catch(e) {
-            console.log(e);
-        }
+        } catch(e) { console.log(e); }
     }
 
-    // ============ РУЛЕТКА И ВЫПЕНИЕ ============
+    // ============ РУЛЕТКА ============
     function startRoulette() {
         document.getElementById('payStep').style.display = 'none';
         document.getElementById('spinStep').style.display = 'block';
         isSpinning = true;
 
-        // Выбираем приз
+        // Берем пул подходящих по цене
         const validPool = nftPool.filter(i => i.val <= currentCase.max);
         const prize = validPool[Math.floor(Math.random() * validPool.length)];
 
-        // Заполняем ленту (10 элементов для красоты)
         const track = document.getElementById('rItems');
         track.innerHTML = '';
         let itemsHtml = '';
         
-        // Генерируем рандомные элементы, а в центр ставим наш приз
+        // Генерируем 20 элементов, 15-й по счету - наш приз
         for(let i=0; i<20; i++) {
             let item = validPool[Math.floor(Math.random() * validPool.length)];
-            if(i === 15) item = prize; // Выигрышный элемент
+            if(i === 15) item = prize;
             
             itemsHtml += `
                 <div class="r-item">
-                    <img src="${item.icon}">
+                    ${item.icon}
                     <span>${item.val} ⭐</span>
                 </div>
             `;
@@ -380,23 +354,18 @@
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
 
-        // Анимация кручения
         setTimeout(() => {
             track.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.7, 0.1, 1)';
             
-            // Смещение: 15-й элемент в центр. Ширина элемента 130px (120+10gap)
-            // Нам нужно сдвинуть ленту влево так, чтобы 15-й элемент встал по центру (на 50% экрана)
+            // Высчитываем точную позицию для центрального маркера
             const trackWidth = document.querySelector('.r-track').offsetWidth;
-            const itemCenter = (15 * 130) + 60; // 60 - половина ширины
+            const itemCenter = (15 * 110) + 50; // 100px width + 10px gap = 110. +50 половина
             const windowCenter = trackWidth / 2;
             const moveTo = -(itemCenter - windowCenter);
             
             track.style.transform = `translateX(${moveTo}px)`;
             
-            // Конец анимации
-            setTimeout(() => {
-                showResult(prize);
-            }, 3600);
+            setTimeout(() => { showResult(prize); }, 3600);
         }, 100);
     }
 
@@ -405,20 +374,20 @@
         document.getElementById('spinStep').style.display = 'none';
         document.getElementById('resultStep').style.display = 'flex';
         
-        document.getElementById('resImg').src = prize.icon;
+        document.getElementById('resIcon').innerHTML = prize.icon;
         document.getElementById('resName').textContent = prize.name;
         document.getElementById('resPrice').textContent = prize.val + " ⭐";
 
-        // Сохраняем в коллекцию
         inventory.push(prize);
-        localStorage.setItem('cv_inv_v2', JSON.stringify(inventory));
+        localStorage.setItem('cv_inv_v3', JSON.stringify(inventory));
         renderInv();
     }
 
+    // ============ ИНВЕНТАРЬ ============
     function renderInv() {
         const g = document.getElementById('invList');
         if(inventory.length === 0) {
-            g.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#666; padding: 20px;">Инвентарь пуст</div>';
+            g.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#666; padding: 20px; font-size:14px;">Инвентарь пуст</div>';
             return;
         }
         g.innerHTML = '';
@@ -426,7 +395,7 @@
             const div = document.createElement('div');
             div.className = 'inv-card';
             div.innerHTML = `
-                <img src="${item.icon}">
+                ${item.icon}
                 <div class="inv-name">${item.name}</div>
                 <div class="inv-price">${item.val} ⭐</div>
             `;
@@ -434,29 +403,22 @@
         });
     }
 
-    // ============ ЗВЕЗДЫ (ФОН) ============
+    // ============ ЗВЕЗДНЫЙ ФОН ============
     function drawStars() {
         const canvas = document.getElementById('stars-canvas');
         const ctx = canvas.getContext('2d');
         let w = canvas.width = window.innerWidth;
         let h = canvas.height = window.innerHeight;
-        
-        const stars = Array.from({length: 100}).map(() => ({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            s: Math.random() * 1.5,
-            v: Math.random() * 0.5 + 0.1
+        const stars = Array.from({length: 80}).map(() => ({
+            x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.5, v: Math.random() * 0.5 + 0.1
         }));
-
         function render() {
             ctx.clearRect(0, 0, w, h);
             stars.forEach(st => {
                 st.y += st.v;
                 if(st.y > h) st.y = 0;
                 ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.3})`;
-                ctx.beginPath();
-                ctx.arc(st.x, st.y, st.s, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(st.x, st.y, st.s, 0, Math.PI*2); ctx.fill();
             });
             requestAnimationFrame(render);
         }
