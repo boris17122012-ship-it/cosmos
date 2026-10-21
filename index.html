@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COSMIC VAULT</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
+    <style>
+        :root{
+            --bg:#000;--card:#111;--border:rgba(255,255,255,.1);
+            --text:#fff;--muted:rgba(255,255,255,.7);
+            --gold:rgba(255,215,0,.9);--ton:#0098EA;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+            padding-bottom:env(safe-area-inset-bottom)}
+        .header{padding:14px 16px;background:var(--bg);border-bottom:1px solid var(--border);
+            position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;
+            align-items:center;flex-wrap:wrap;gap:10px}
+        .title{font-size:18px;font-weight:700}
+        .balances{display:flex;gap:8px}
+        .bal{background:rgba(255,255,255,.05);border:1px solid var(--border);
+            border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:6px;
+            font-weight:600;font-size:13px}
+        .content{max-width:800px;margin:0 auto;padding:16px}
+        .sec-header{margin:24px 0 16px;text-align:center}
+        .sec-title{font-size:20px;font-weight:700;margin-bottom:6px}
+        .sec-sub{color:var(--muted);font-size:13px}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:14px;margin:16px 0 32px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+            padding:18px;transition:.2s;cursor:pointer;position:relative;overflow:hidden}
+        .card:hover{border-color:var(--gold);transform:translateY(-2px)}
+        .card.premium{border-color:var(--gold)}
+        .badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#000;
+            font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+        .c-icon{width:70px;height:70px;margin:0 auto 14px;background:rgba(255,255,255,.05);
+            border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;
+            justify-content:center;font-size:28px;font-weight:700}
+        .c-title{font-size:16px;font-weight:700;text-align:center;margin-bottom:8px}
+        .c-desc{color:var(--muted);font-size:12px;text-align:center;margin-bottom:14px;min-height:32px}
+        .c-price{font-size:20px;font-weight:800;color:var(--gold);text-align:center;
+            margin-bottom:4px;font-family:monospace}
+        .c-price-ton{font-size:14px;font-weight:600;color:var(--ton);text-align:center;
+            margin-bottom:16px;font-family:monospace}
+        .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+            background:rgba(255,255,255,.03);border-radius:10px;padding:10px;margin-bottom:16px}
+        .stat{text-align:center}
+        .stat-v{font-size:16px;font-weight:700}
+        .stat-l{font-size:10px;color:var(--muted);margin-top:2px}
+        .btn{width:100%;background:rgba(255,255,255,.1);border:1px solid var(--border);
+            color:var(--text);padding:12px;border-radius:10px;font-size:15px;font-weight:600;
+            cursor:pointer;transition:.2s;text-align:center}
+        .btn:hover{background:rgba(255,255,255,.15)}
+        .btn.primary{background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,165,0,.1));
+            border-color:rgba(255,215,0,.3);color:var(--gold)}
+        .btn.ton{background:linear-gradient(135deg,rgba(0,152,234,.2),rgba(0,152,234,.1));
+            border-color:rgba(0,152,234,.3);color:var(--ton)}
+        .nav{display:flex;background:var(--card);border-top:1px solid var(--border);
+            position:sticky;bottom:0;padding:8px 12px;gap:8px}
+        .nav-btn{flex:1;padding:10px;background:rgba(255,255,255,.05);
+            border:1px solid var(--border);border-radius:10px;color:var(--text);
+            text-align:center;font-weight:600;cursor:pointer;font-size:13px}
+        .nav-btn.active{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.3);color:var(--gold)}
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;
+            justify-content:center;align-items:center;z-index:1000;padding:16px}
+        .modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;
+            width:100%;max-width:500px;max-height:90vh;overflow:hidden}
+        .modal-head{padding:16px;border-bottom:1px solid var(--border);
+            display:flex;justify-content:space-between;align-items:center}
+        .modal-title{font-size:18px;font-weight:700}
+        .modal-close{background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer}
+        .pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+        .pay-opt{padding:16px;border:2px solid var(--border);border-radius:14px;
+            text-align:center;cursor:pointer;transition:.2s}
+        .pay-opt.sel{border-color:var(--gold);background:rgba(255,215,0,.05)}
+        .pay-opt.ton.sel{border-color:var(--ton);background:rgba(0,152,234,.05)}
+        .pay-icon{font-size:28px;margin-bottom:8px}
+        .pay-name{font-size:14px;font-weight:700;margin-bottom:4px}
+        .pay-price{font-size:12px;color:var(--muted)}
+        .roulette{padding:16px;text-align:center}
+        .track{height:180px;overflow:hidden;margin:24px 0;position:relative}
+        .items{display:flex;gap:12px;position:absolute;left:0;transition:transform .1s linear;padding:16px 0}
+        .item{width:140px;height:140px;background:var(--bg);border:1px solid var(--border);
+            border-radius:12px;padding:12px;flex-shrink:0;display:flex;flex-direction:column;
+            align-items:center;justify-content:center;transition:.3s}
+        .item.active{border-color:var(--gold);box-shadow:0 0 24px rgba(255,215,0,.3);transform:scale(1.08)}
+        .i-icon{font-size:28px;margin-bottom:8px}
+        .i-name{font-size:12px;font-weight:600;margin-bottom:6px;text-align:center;
+            height:28px;display:flex;align-items:center;justify-content:center}
+        .i-value{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:6px}
+        .i-rar{font-size:9px;padding:2px 8px;border-radius:8px;font-weight:700}
+        .rar-common{background:rgba(255,255,255,.1)}
+        .rar-rare{background:rgba(100,150,255,.2)}
+        .rar-epic{background:rgba(180,100,255,.2)}
+        .rar-legendary{background:rgba(255,215,0,.2)}
+        .result{padding:24px;text-align:center;display:none}
+        .result-title{font-size:22px;font-weight:700;margin-bottom:24px}
+        .result-item{padding:24px;background:var(--bg);border:2px solid var(--gold);
+            border-radius:16px;margin-bottom:24px}
+        .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+            gap:10px;margin-top:16px}
+        .inv-item{background:var(--card);border:1px solid var(--border);
+            border-radius:10px;padding:12px;text-align:center}
+        .empty{grid-column:1/-1;text-align:center;padding:32px 16px;color:var(--muted)}
+        .loading{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;
+            justify-content:center;align-items:center;z-index:3000;flex-direction:column;gap:16px}
+        .spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.1);
+            border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .load-text{color:var(--muted);font-size:14px;text-align:center;padding:0 20px}
+        @media(max-width:600px){
+            .grid{grid-template-columns:1fr}
+            .pay-opts{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">COSMIC VAULT</div>
+        <div class="balances">
+            <div class="bal"><span>⭐</span><span id="balStars">1,000,000</span></div>
+            <div class="bal"><span>💎</span><span id="balTon">0.00</span></div>
+        </div>
+    </div>
+
+    <div class="content">
+        <section id="secCases">
+            <div class="sec-header">
+                <h2 class="sec-title">NFT КЕЙСЫ TELEGRAM</h2>
+                <p class="sec-sub">Оплата звёздами ⭐ или TON 💎</p>
+            </div>
+            <div class="grid" id="casesGrid"></div>
+        </section>
+        <section id="secInv" style="display:none">
+            <div class="sec-header">
+                <h2 class="sec-title">КОЛЛЕКЦИЯ</h2>
+                <p class="sec-sub">Полученные NFT подарки</p>
+            </div>
+            <div class="inv-grid" id="invGrid"></div>
+        </section>
+    </div>
+
+    <div class="nav">
+        <button class="nav-btn active" onclick="showSec('cases')">🎰 КЕЙСЫ</button>
+        <button class="nav-btn" onclick="showSec('inv')">📦 КОЛЛЕКЦИЯ</button>
+        <button class="nav-btn" onclick="connectWallet()">💎 TON</button>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="modal-title" id="modalTitle">ОТКРЫТИЕ</div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="payStep">
+                <p style="text-align:center;padding:16px 16px 0;color:var(--muted);font-size:13px">
+                    Выберите способ оплаты
+                </p>
+                <div class="pay-opts" id="payOpts"></div>
+            </div>
+            <div class="roulette" id="roulStep" style="display:none">
+                <div class="track"><div class="items" id="roulItems"></div></div>
+                <button class="btn primary" id="spinBtn" onclick="doSpin()">ЗАПУСТИТЬ</button>
+            </div>
+            <div class="result" id="resultStep">
+                <h3 class="result-title">🎉 ПОБЕДА!</h3>
+                <div class="result-item" id="resultItem"></div>
+                <button class="btn primary" onclick="closeModal()">ЗАБРАТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spin"></div>
+        <div class="load-text" id="loadText">Обработка...</div>
+    </div>
+
+<script>
+// ============ КОНФИГ ============
+const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
+const TON_RATE = 7.5;              // 1 TON ≈ 7.5 ⭐ (для отображения)
+const tg = window.Telegram?.WebApp;
+if (tg) {
+    tg.expand();
+    tg.setHeaderColor('#000000');
+    tg.setBackgroundColor('#000000');
+    tg.BackButton.hide();
+}
+
+// ============ NFT ПОДАРКИ (Fragment-модели) ============
+const nft = {
+    common:[
+        {id:1,name:"HEART",icon:"❤️",value:1500,ton:0.05,rarity:"common",color:"#e74c3c"},
+        {id:2,name:"BEAR",icon:"🐻",value:2000,ton:0.08,rarity:"common",color:"#8B4513"},
+        {id:3,name:"CAKE",icon:"🎂",value:1800,ton:0.07,rarity:"common",color:"#f39c12"},
+        {id:4,name:"FLOWER",icon:"🌹",value:1600,ton:0.06,rarity:"common",color:"#e91e63"},
+        {id:5,name:"STAR",icon:"⭐",value:1200,ton:0.04,rarity:"common",color:"#f1c40f"},
+        {id:6,name:"MOON",icon:"🌙",value:2200,ton:0.09,rarity:"common",color:"#ecf0f1"},
+    ],
+    rare:[
+        {id:7,name:"DELICIOUS CAKE",icon:"🍰",value:5000,ton:0.2,rarity:"rare",color:"#d35400"},
+        {id:8,name:"GIFT BOX",icon:"🎁",value:6000,ton:0.25,rarity:"rare",color:"#e74c3c"},
+        {id:9,name:"DIAMOND RING",icon:"💍",value:7500,ton:0.35,rarity:"rare",color:"#00d4ff"},
+        {id:10,name:"TEDDY BEAR",icon:"🧸",value:5500,ton:0.22,rarity:"rare",color:"#8B4513"},
+        {id:11,name:"LUCKY CLOVER",icon:"🍀",value:6800,ton:0.3,rarity:"rare",color:"#27ae60"},
+    ],
+    epic:[
+        {id:12,name:"PLUSH PEPE",icon:"🐸",value:18000,ton:0.8,rarity:"epic",color:"#27ae60"},
+        {id:13,name:"CRYSTAL BALL",icon:"🔮",value:22000,ton:1.0,rarity:"epic",color:"#9b59b6"},
+        {id:14,name:"GOLDEN TROPHY",icon:"🏆",value:25000,ton:1.2,rarity:"epic",color:"#f1c40f"},
+        {id:15,name:"MAGIC WAND",icon:"🪄",value:20000,ton:0.9,rarity:"epic",color:"#3498db"},
+    ],
+    legendary:[
+        {id:16,name:"ARTISAN BRICK",icon:"🧱",value:80000,ton:4.0,rarity:"legendary",color:"#e67e22"},
+        {id:17,name:"WESTERN HAT",icon:"🤠",value:95000,ton:4.8,rarity:"legendary",color:"#8B4513"},
+        {id:18,name:"LOVE POTION",icon:"🧪",value:120000,ton:6.0,rarity:"legendary",color:"#e91e63"},
+        {id:19,name:"ETERNAL ROSE",icon:"🌹",value:150000,ton:8.0,rarity:"legendary",color:"#c0392b"},
+        {id:20,name:"HEROIC HELMET",icon:"⛑️",value:200000,ton:12.0,rarity:"legendary",color:"#2c3e50"},
+    ]
+};
+
+// ============ КЕЙСЫ ============
+const cases = [
+    {id:1,name:"СТАРТОВЫЙ",icon:"I",priceStars:500,priceTon:0.1,description:"Базовые подарки",
+     premium:false,dropChance:{common:80,rare:18,epic:2,legendary:0},
+     items:[...nft.common.slice(0,4),...nft.rare.slice(0,2)]},
+    {id:2,name:"ГАЛАКТИЧЕСКИЙ",icon:"II",priceStars:1500,priceTon:0.3,description:"Редкие подарки",
+     premium:true,dropChance:{common:70,rare:25,epic:4,legendary:1},
+     items:[...nft.common,...nft.rare.slice(0,4),...nft.epic.slice(0,1)]},
+    {id:3,name:"КОСМИЧЕСКИЙ",icon:"III",priceStars:5000,priceTon:1.0,description:"Эпические NFT",
+     premium:false,dropChance:{common:50,rare:35,epic:12,legendary:3},
+     items:[...nft.rare,...nft.epic.slice(0,3),...nft.legendary.slice(0,1)]},
+    {id:4,name:"ЧЕРНАЯ ДЫРА",icon:"IV",priceStars:15000,priceTon:3.0,description:"Легендарные",
+     premium:true,dropChance:{common:30,rare:40,epic:25,legendary:5},
+     items:[...nft.epic,...nft.legendary.slice(0,3)]},
+    {id:5,name:"БЕСКОНЕЧНОСТЬ",icon:"∞",priceStars:50000,priceTon:10.0,description:"Абсолютные реликвии",
+     premium:true,dropChance:{common:5,rare:25,epic:40,legendary:30},
+     items:[...nft.legendary,...nft.epic.slice(1,3)]}
+];
+
+// ============ СОСТОЯНИЕ ============
+let userStars = 1000000;
+let userTon = 0;
+let inventory = [];
+let currentCase = null;
+let payMethod = 'stars';
+let spinning = false;
+let tonConnectUI = null;
+
+// ============ INIT ============
+function init() {
+    loadGame();
+    renderCases();
+    updateUI();
+    renderInv();
+    initTon();
+}
+function initTon() {
+    try {
+        tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: location.origin + '/tonconnect-manifest.json',
+            uiPreferences: { theme: 'DARK' }
+        });
+        tonConnectUI.onStatusChange(w => {
+            if (w) {
+                fetchTonBalance(w.account.address);
+            }
+        });
+    } catch(e) { console.warn('TON init', e); }
+}
+async function fetchTonBalance(addr) {
+    try {
+        const r = await fetch(`https://tonapi.io/v2/accounts/${addr}`);
+        const d = await r.json();
+        if (d.balance) {
+            userTon = d.balance / 1e9;
+            document.getElementById('balTon').textContent = userTon.toFixed(2);
+        }
+    } catch(e){}
+}
+function connectWallet() {
+    if (!tonConnectUI) return initTon();
+    tonConnectUI.openModal();
+}
+
+// ============ UI ============
+function showSec(s) {
+    document.getElementById('secCases').style.display = s==='cases'?'block':'none';
+    document.getElementById('secInv').style.display = s==='inv'?'block':'none';
+    const btns = document.querySelectorAll('.nav-btn');
+    btns[0].classList.toggle('active', s==='cases');
+    btns[1].classList.toggle('active', s==='inv');
+}
+function renderCases() {
+    const g = document.getElementById('casesGrid');
+    g.innerHTML = '';
+    cases.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card' + (c.premium?' premium':'');
+        el.onclick = () => openCase(c);
+        el.innerHTML = `
+            ${c.premium?'<div class="badge">PREMIUM</div>':''}
+            <div class="c-icon">${c.icon}</div>
+            <div class="c-title">${c.name}</div>
+            <div class="c-desc">${c.description}</div>
+            <div class="c-price">${fmtStars(c.priceStars)}</div>
+            <div class="c-price-ton">${c.priceTon.toFixed(2)} TON 💎</div>
+            <div class="stats">
+                <div class="stat"><div class="stat-v">${c.items.length}</div><div class="stat-l">ПОДАРКОВ</div></div>
+                <div class="stat"><div class="stat-v">${c.dropChance.legendary}%</div><div class="stat-l">ЛЕГ.</div></div>
+                <div class="stat"><div class="stat-v">${c.dropChance.epic}%</div><div class="stat-l">ЭПИЧ.</div></div>
+            </div>
+            <button class="btn primary">ОТКРЫТЬ</button>
+        `;
+        g.appendChild(el);
+    });
+}
+
+// ============ ОТКРЫТИЕ КЕЙСА ============
+function openCase(c) {
+    currentCase = c;
+    payMethod = 'stars';
+    document.getElementById('modalTitle').textContent = 'ОТКРЫТИЕ: ' + c.name;
+    document.getElementById('payStep').style.display = 'block';
+    document.getElementById('roulStep').style.display = 'none';
+    document.getElementById('resultStep').style.display = 'none';
+    renderPayOpts();
+    document.getElementById('modal').style.display = 'flex';
+    if (tg) tg.BackButton.show();
+}
+function renderPayOpts() {
+    const c = currentCase;
+    const o = document.getElementById('payOpts');
+    o.innerHTML = `
+        <div class="pay-opt ${payMethod==='stars'?'sel':''}" onclick="setPay('stars')">
+            <div class="pay-icon">⭐</div>
+            <div class="pay-name">ЗВЁЗДЫ</div>
+            <div class="pay-price">${fmtStars(c.priceStars)}</div>
+        </div>
+        <div class="pay-opt ton ${payMethod==='ton'?'sel':''}" onclick="setPay('ton')">
+            <div class="pay-icon">💎</div>
+            <div class="pay-name">TON</div>
+            <div class="pay-price">${c.priceTon.toFixed(2)} TON</div>
+        </div>
+    `;
+    const old = document.getElementById('confirmBtn');
+    if (old) old.remove();
+    const b = document.createElement('button');
+    b.id = 'confirmBtn';
+    b.className = 'btn primary';
+    b.style.margin = '0 16px 16px';
+    b.style.width = 'calc(100% - 32px)';
+    b.textContent = payMethod==='stars'
+        ? `ОПЛАТИТЬ ${fmtStars(c.priceStars)}`
+        : `ОПЛАТИТЬ ${c.priceTon.toFixed(2)} TON`;
+    b.onclick = confirmPay;
+    o.after(b);
+}
+function setPay(m) {
+    payMethod = m;
+    renderPayOpts();
+}
+
+// ============ ОПЛАТА ============
+async function confirmPay() {
+    if (!currentCase) return;
+    const c = currentCase;
+
+    if (payMethod === 'stars') {
+        if (userStars < c.priceStars) { alert('Недостаточно звёзд!'); return; }
+        userStars -= c.priceStars;
+        updateUI(); saveGame();
+        startGame(c);
+        return;
+    }
+
+    // TON
+    if (!tonConnectUI || !tonConnectUI.wallet) {
+        if (confirm('Кошелёк не подключён. Подключить TON?')) connectWallet();
+        return;
+    }
+
+    showLoad('Создание транзакции TON...');
+    try {
+        const invoiceId = 'INV_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+
+        // Создаём payload с комментарием invoiceId
+        const { beginCell } = TON_CORE;
+        const cell = beginCell()
+            .storeUint(0, 32)
+            .storeStringTail(invoiceId)
+            .endCell();
+        const payload = cell.toBoc().toString('base64');
+
+        const tx = {
+            validUntil: Math.floor(Date.now()/1000) + 300,
+            messages: [{
+                address: RECEIVER,
+                amount: String(Math.floor(c.priceTon * 1e9)),
+                payload
+            }]
+        };
+
+        await tonConnectUI.sendTransaction(tx);
+        showLoad('Ожидание подтверждения в блокчейне...');
+
+        // Опрос подтверждения через Vercel API
+        let tries = 0;
+        const poll = setInterval(async () => {
+            tries++;
+            try {
+                const r = await fetch('/api/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ invoiceId, expectedTon: c.priceTon })
+                });
+                const d = await r.json();
+                if (d.paid) {
+                    clearInterval(poll);
+                    hideLoad();
+                    alert('✅ Оплата подтверждена!');
+                    // Начисляем баланс (для демо — на фронте)
+                    userStars += c.priceStars;  // «покупка» пополнения
+                    userStars -= c.priceStars;  // потом списываем
+                    updateUI(); saveGame();
+                    startGame(c);
+                } else if (tries > 40) {
+                    clearInterval(poll);
+                    hideLoad();
+                    alert('⏳ Транзакция не подтверждена за 3 минуты. Проверьте позже.');
+                }
+            } catch(e) {
+                if (tries > 40) {
+                    clearInterval(poll); hideLoad();
+                    alert('Ошибка проверки: ' + e.message);
+                }
+            }
+        }, 5000);
+    } catch(e) {
+        hideLoad();
+        alert('Ошибка TON: ' + (e.message || e));
+    }
+}
+
+// ============ ИГРА ============
+function startGame(c) {
+    document.getElementById('payStep').style.display = 'none';
+    document.getElementById('roulStep').style.display = 'block';
+    document.getElementById('resultStep').style.display = 'none';
+    prepareRoul(c);
+    const b = document.getElementById('spinBtn');
+    b.disabled = false;
+    b.textContent = 'ЗАПУСТИТЬ ВРАЩЕНИЕ';
+}
+function prepareRoul(c) {
+    const cont = document.getElementById('roulItems');
+    cont.innerHTML = '';
+    const list = [...c.items, ...c.items, ...c.items];
+    list.forEach(it => {
+        const e = document.createElement('div');
+        e.className = 'item';
+        e.innerHTML = `
+            <div class="i-icon" style="color:${it.color}">${it.icon}</div>
+            <div class="i-name">${it.name}</div>
+            <div class="i-value">${fmtStars(it.value)}</div>
+            <div class="i-rar rar-${it.rarity}">${it.rarity.toUpperCase()}</div>
+        `;
+        cont.appendChild(e);
+    });
+    cont.style.transform = 'translateX(0px)';
+}
+function doSpin() {
+    if (spinning || !currentCase) return;
+    spinning = true;
+    const b = document.getElementById('spinBtn');
+    b.disabled = true;
+    b.textContent = 'ВРАЩЕНИЕ...';
+
+    const prize = randomPrize(currentCase);
+    const cont = document.getElementById('roulItems');
+    const items = cont.querySelectorAll('.item');
+    const w = 152;
+    const targetIdx = Math.floor(items.length/3) + Math.floor(Math.random()*currentCase.items.length);
+    const targetPos = -(targetIdx * w);
+
+    let pos = 0, speed = 3, decel = false;
+    function anim() {
+        if (!decel && pos < -1000) decel = true;
+        if (decel) {
+            speed *= 0.96;
+            if (speed < 0.5 && Math.abs(pos - targetPos) < w) {
+                finishSpin(prize, targetIdx);
+                return;
+            }
+        } else {
+            speed = Math.min(speed*1.02, 15);
+        }
+        pos -= speed;
+        cont.style.transform = `translateX(${pos}px)`;
+        requestAnimationFrame(anim);
+    }
+    anim();
+}
+function finishSpin(prize, idx) {
+    spinning = false;
+    const items = document.querySelectorAll('.item');
+    items.forEach(i=>i.classList.remove('active'));
+    if (items[idx]) items[idx].classList.add('active');
+    setTimeout(()=>showRes(prize), 1000);
+    const b = document.getElementById('spinBtn');
+    b.disabled = false;
+    b.textContent = 'ЗАПУСТИТЬ ВРАЩЕНИЕ';
+}
+function showRes(p) {
+    document.getElementById('roulStep').style.display = 'none';
+    document.getElementById('resultStep').style.display = 'block';
+    document.getElementById('resultItem').innerHTML = `
+        <div class="i-icon" style="font-size:44px;color:${p.color}">${p.icon}</div>
+        <div style="font-size:18px;font-weight:700;margin:12px 0">${p.name}</div>
+        <div style="font-size:22px;color:gold;margin-bottom:8px">${fmtStars(p.value)}</div>
+        <div style="font-size:13px;color:var(--ton);margin-bottom:8px">~${p.ton.toFixed(2)} TON</div>
+        <div class="i-rar rar-${p.rarity}">${p.rarity.toUpperCase()}</div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px">NFT Telegram · Fragment</p>
+    `;
+    inventory.push({...p, obtained:new Date().toLocaleDateString('ru-RU')});
+    saveGame(); renderInv();
+}
+function randomPrize(c) {
+    const r = Math.random()*100;
+    let cum = 0, sel = 'common';
+    for (const [k,v] of Object.entries(c.dropChance)) {
+        cum += v;
+        if (r <= cum) { sel = k; break; }
+    }
+    let pool = nft[sel] || [];
+    const max = Math.max(...c.items.map(i=>i.value));
+    pool = pool.filter(i=>i.value <= max);
+    if (!pool.length) pool = c.items;
+    return pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ============ ИНВЕНТАРЬ ============
+function renderInv() {
+    const g = document.getElementById('invGrid');
+    if (!inventory.length) {
+        g.innerHTML = `<div class="empty">
+            <div style="font-size:40px;margin-bottom:16px;opacity:0.5">📭</div>
+            <div style="font-size:15px;margin-bottom:8px">Коллекция пуста</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5)">Откройте кейс, чтобы получить подарок</div>
+        </div>`;
+        return;
+    }
+    g.innerHTML = '';
+    inventory.forEach(it => {
+        const e = document.createElement('div');
+        e.className = 'inv-item';
+        e.innerHTML = `
+            <div style="font-size:22px;color:${it.color};margin-bottom:8px">${it.icon}</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">${it.name}</div>
+            <div style="color:gold;font-size:14px">${fmtStars(it.value)}</div>
+            <div style="color:var(--ton);font-size:11px;margin:4px 0">~${it.ton.toFixed(2)} TON</div>
+            <div class="i-rar rar-${it.rarity}" style="font-size:9px">${it.rarity.toUpperCase()}</div>
+        `;
+        g.appendChild(e);
+    });
+}
+
+// ============ UTIL ============
+function fmtStars(a) {
+    if (a >= 1000000) return (a/1000000).toFixed(1)+'M ⭐';
+    if (a >= 1000) return (a/1000).toFixed(1)+'K ⭐';
+    return a.toLocaleString()+' ⭐';
+}
+function updateUI() {
+    document.getElementById('balStars').textContent = userStars.toLocaleString();
+    document.getElementById('balTon').textContent = userTon.toFixed(2);
+}
+function showLoad(t) {
+    document.getElementById('loadText').textContent = t || 'Обработка...';
+    document.getElementById('loading').style.display = 'flex';
+}
+function hideLoad() {
+    document.getElementById('loading').style.display = 'none';
+}
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    currentCase = null;
+    spinning = false;
+    if (tg) tg.BackButton.hide();
+}
+function saveGame() {
+    localStorage.setItem('cv_stars', userStars);
+    localStorage.setItem('cv_inv', JSON.stringify(inventory));
+}
+function loadGame() {
+    const s = localStorage.getItem('cv_stars');
+    if (s) userStars = parseInt(s) || 1000000;
+    const i = localStorage.getItem('cv_inv');
+    if (i) { try { inventory = JSON.parse(i); } catch(e){ inventory=[]; } }
+}
+
+window.addEventListener('load', init);
+window.addEventListener('beforeunload', saveGame);
+</script>
+</body>
+</html>
