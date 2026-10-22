@@ -32,7 +32,6 @@
         .modal.show { display: flex; }
         .box { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; }
         
-        /* Поле ввода только для цифр */
         .num-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: #fff; font-size: 24px; text-align: center; margin-bottom: 15px; font-weight: 800; outline: none; }
         .pay-btn { background: var(--accent); border: none; border-radius: 12px; padding: 18px; font-size: 16px; font-weight: 800; color: #fff; width: 100%; cursor: pointer; margin-bottom: 10px;}
     </style>
@@ -51,7 +50,13 @@
         </div>
 
         <div class="content">
-            <div class="grid" id="casesGrid"></div>
+            <div class="grid" id="casesGrid">
+                <!-- Тестовый кейс -->
+                <div class="card" onclick="alert('Кейсы в разработке')">
+                    <div style="font-size:24px; margin-right:15px;">💎</div>
+                    <div><div style="font-weight:800;">ТЕСТОВЫЙ КЕЙС</div><div style="font-size:12px; color:#888;">Стоимость: 50 ⭐</div></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -59,22 +64,21 @@
     <div class="modal" id="topupModal">
         <div class="box">
             <h3 style="margin-bottom:10px;">ПОПОЛНЕНИЕ</h3>
-            <p style="color:#888; font-size:12px; margin-bottom:15px;">Введите сумму в звездах</p>
-            <input type="number" class="num-input" id="topupAmount" placeholder="1000" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Введите сумму (мин. 50)</p>
+            <input type="number" class="num-input" id="topupAmount" placeholder="100" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <button class="pay-btn" onclick="startTonPayment()">ОПЛАТИТЬ TON</button>
             <button style="background:none; border:none; color:#888; margin-top:10px;" onclick="document.getElementById('topupModal').classList.remove('show')">ОТМЕНА</button>
-            <div id="payStatus" style="margin-top:15px; color:gold; font-size:12px;"></div>
+            <div id="payStatus" style="margin-top:15px; color:gold; font-size:12px; word-break: break-word;"></div>
         </div>
     </div>
 
 <script>
-    // НАСТРОЙКИ
     const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
-    const TON_RATE = 100; // 100 звезд = 1 TON
+    const TON_RATE = 100;
 
     let userStars = 0;
     let telegramId = null;
@@ -83,19 +87,19 @@
 
     if(tg) { tg.expand(); }
 
-    // Инициализация TON
-    tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: location.origin + '/tonconnect-manifest.json',
-        uiPreferences: { theme: 'DARK' }
-    });
+    try {
+        tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: location.origin + '/tonconnect-manifest.json',
+            uiPreferences: { theme: 'DARK' }
+        });
+    } catch(e) { console.error("TON Init Error:", e); }
 
     setTimeout(() => {
         document.getElementById('preloader').style.opacity = '0';
         document.getElementById('app').style.opacity = '1';
         setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
-    }, 1500);
+    }, 1000);
 
-    // Загрузка данных
     async function loadUser() {
         if (!tg || !tg.initDataUnsafe?.user) return;
         telegramId = tg.initDataUnsafe.user.id;
@@ -107,84 +111,102 @@
     }
     loadUser();
 
-    // Открытие окна
     function openTopup() {
         document.getElementById('topupModal').classList.add('show');
         document.getElementById('payStatus').textContent = '';
     }
 
-    // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
     async function startTonPayment() {
         const amountInput = document.getElementById('topupAmount');
         const starsToAdd = parseInt(amountInput.value);
         const statusEl = document.getElementById('payStatus');
 
-        // Проверка на дурака
+        statusEl.style.color = 'gold';
+        statusEl.textContent = "Обработка...";
+
         if (!starsToAdd || starsToAdd < 50) {
-            statusEl.textContent = "Минимальная сумма: 50 звезд.";
+            statusEl.textContent = "Ошибка: Минимальная сумма 50 звезд.";
+            return;
+        }
+
+        if (!tonConnectUI) {
+            statusEl.textContent = "Ошибка: Кошелек не инициализирован.";
             return;
         }
 
         if (!tonConnectUI.wallet) {
-            statusEl.textContent = "Подключите кошелек TON...";
+            statusEl.textContent = "Подключение кошелька...";
             tonConnectUI.openModal();
             return;
         }
 
         const tonAmount = starsToAdd / TON_RATE;
-        const invoiceId = 'PAY_' + Date.now(); // Уникальный код чека
-
-        statusEl.textContent = "Отправка транзакции...";
+        const invoiceId = 'PAY_' + Date.now();
 
         try {
-            // 1. Отправляем TON
-            const { beginCell } = TON_CORE;
-            const cell = beginCell().storeUint(0, 32).storeStringTail(invoiceId).endCell();
-            const payload = cell.toBoc().toString('base64');
+            statusEl.textContent = "Формирование транзакции...";
+            
+            let payload = null;
+            // Безопасная проверка наличия библиотеки для комментария
+            if (window.TON_CORE && window.TON_CORE.beginCell) {
+                const cell = window.TON_CORE.beginCell().storeUint(0, 32).storeStringTail(invoiceId).endCell();
+                payload = cell.toBoc().toString('base64');
+            }
 
-            await tonConnectUI.sendTransaction({
+            const tx = {
                 validUntil: Math.floor(Date.now() / 1000) + 300,
                 messages: [{
                     address: RECEIVER,
                     amount: String(Math.floor(tonAmount * 1e9)),
-                    payload: payload
                 }]
-            });
-
-            // 2. Ждем подтверждения в блокчейне
-            statusEl.textContent = "Ожидание подтверждения сети (15 сек)...";
-            let attempts = 0;
+            };
             
+            if (payload) tx.messages[0].payload = payload;
+
+            statusEl.textContent = "Ожидание подтверждения в приложении...";
+
+            // Отправляем
+            await tonConnectUI.sendTransaction(tx);
+
+            // Если код дошел сюда - значит транзакция отправлена
+            statusEl.textContent = "Транзакция отправлена! Ждем сеть (15 сек)...";
+            
+            let attempts = 0;
             const checkInterval = setInterval(async () => {
                 attempts++;
-                // Стучимся к нашему API (в папке api/check-payment.js)
+                
+                // Заглушка для проверки (если API не настроен)
                 const check = await fetch('/api/check-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ invoiceId: invoiceId, expectedTon: tonAmount })
-                });
+                }).catch(() => ({ json: () => ({ paid: false }) })); // Игнорируем ошибки сети
+                
                 const res = await check.json();
 
                 if (res.paid) {
                     clearInterval(checkInterval);
+                    statusEl.style.color = '#00ff00';
                     statusEl.textContent = "✅ Оплата прошла! Начисляем...";
                     
-                    // 3. Начисляем звезды в базу
                     userStars += starsToAdd;
                     document.getElementById('balStars').textContent = userStars;
                     await supabase.from('players').update({ stars: userStars }).eq('telegram_id', telegramId);
                     
                     statusEl.textContent = `Успешно начислено ${starsToAdd} звезд!`;
                     setTimeout(() => document.getElementById('topupModal').classList.remove('show'), 2000);
-                } else if (attempts > 12) { // Ждем 1 минуту (12 * 5 сек)
+                } else if (attempts > 12) {
                     clearInterval(checkInterval);
+                    statusEl.style.color = 'red';
                     statusEl.textContent = "Сеть не подтвердила платеж. Попробуйте позже.";
                 }
             }, 5000);
 
         } catch (e) {
-            console.error(e);
-            statusEl.textContent = "Ошибка: транзакция отклонена.";
+            console.error("TX Error:", e);
+            statusEl.style.color = 'red';
+            // Выводим реальную ошибку на экран
+            statusEl.textContent = "Отклонено: " + (e.message || "Пользователь отменил транзакцию или недостаточно TON");
         }
     }
 </script>
