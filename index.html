@@ -7,8 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
-    <!-- Подключаем Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <style>
         :root { --bg: #000; --card: rgba(15,15,15,0.7); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -119,7 +118,13 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
     // ===========================================
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase = null;
+    try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+        console.error("Ошибка инициализации Supabase:", e);
+    }
+
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100; 
     
@@ -159,63 +164,71 @@
 
     // ============ ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ============
     async function loadPlayerData() {
+        if (!supabase) {
+            console.log("Supabase не подключен, используем локальные данные");
+            return;
+        }
         if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-            console.warn("Нет данных Telegram");
+            console.log("Нет данных Telegram");
             return;
         }
         telegramId = tg.initDataUnsafe.user.id;
 
-        // Пытаемся найти игрока в базе
-        const { data, error } = await supabase
-            .from('players')
-            .select('*')
-            .eq('telegram_id', telegramId)
-            .single();
-
-        if (error && error.code === 'PGRST116') {
-            // Если игрока нет (ошибка PGRST116 = строка не найдена), создаём новую
-            const { data: newData, error: insertError } = await supabase
+        try {
+            const { data, error } = await supabase
                 .from('players')
-                .insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }])
-                .select()
+                .select('*')
+                .eq('telegram_id', telegramId)
                 .single();
-            
-            if (insertError) {
-                console.error("Ошибка создания игрока:", insertError);
-                userStars = 1000;
-                inventory = [];
-            } else {
-                userStars = newData.stars;
-                inventory = newData.inventory || [];
+
+            if (error && error.code === 'PGRST116') {
+                // Игрока нет — создаем
+                const { data: newData, error: insertError } = await supabase
+                    .from('players')
+                    .insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }])
+                    .select()
+                    .single();
+                
+                if (!insertError && newData) {
+                    userStars = newData.stars;
+                    inventory = newData.inventory || [];
+                }
+            } else if (data) {
+                userStars = data.stars;
+                inventory = data.inventory || [];
             }
-        } else if (data) {
-            userStars = data.stars;
-            inventory = data.inventory || [];
-        } else if (error) {
-            console.error("Ошибка загрузки:", error);
+        } catch(e) {
+            console.error("Ошибка загрузки:", e);
         }
     }
 
     // ============ СОХРАНЕНИЕ В SUPABASE ============
     async function savePlayerData() {
-        if (!telegramId) return;
-        const { error } = await supabase
-            .from('players')
-            .update({ stars: userStars, inventory: inventory, updated_at: new Date() })
-            .eq('telegram_id', telegramId);
-        
-        if (error) console.error("Ошибка сохранения:", error);
+        if (!supabase || !telegramId) return;
+        try {
+            await supabase
+                .from('players')
+                .update({ stars: userStars, inventory: inventory, updated_at: new Date() })
+                .eq('telegram_id', telegramId);
+        } catch(e) { console.error("Ошибка сохранения:", e); }
     }
 
-    // ============ ПРЕЛОАДЕР ============
+    // ============ ПРЕЛОАДЕР (С ЗАЩИТОЙ ОТ ЗАВИСАНИЯ) ============
     let loadP = 0;
     const loadInterval = setInterval(async () => {
-        loadP += Math.random() * 15;
+        loadP += Math.random() * 20;
         if(loadP > 100) loadP = 100;
         document.getElementById('loadBar').style.width = loadP + '%';
-        if(loadP === 100) {
+        
+        if(loadP >= 100) {
             clearInterval(loadInterval);
-            await loadPlayerData(); // Загружаем данные перед показом
+            
+            // Запускаем загрузку из базы, но не ждем дольше 3 секунд
+            await Promise.race([
+                loadPlayerData(),
+                new Promise(resolve => setTimeout(resolve, 3000))
+            ]);
+            
             updateUI();
             renderInv();
             document.getElementById('preloader').style.opacity = '0';
@@ -279,7 +292,7 @@
         if(userStars < currentCase.price) return alert("Недостаточно звезд!");
         userStars -= currentCase.price;
         updateUI();
-        await savePlayerData(); // Сохраняем списание
+        await savePlayerData();
         startRoulette();
     }
 
@@ -331,7 +344,7 @@
         document.getElementById('resPrice').textContent = prize.val + " ⭐";
         
         inventory.push(prize);
-        await savePlayerData(); // Сохраняем выигрыш в базу
+        await savePlayerData();
         renderInv();
     }
 
