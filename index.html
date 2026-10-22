@@ -21,7 +21,6 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
-        /* Красивый звездный фон */
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
         #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s; }
@@ -42,10 +41,9 @@
         .bal { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 30px; }
         .bal svg { width: 14px; height: 14px; fill: #fff; }
         
-        /* Кнопка TON */
         .connect-btn { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: rgba(0,152,234,0.1); border: 1px solid rgba(0,152,234,0.3); color: var(--ton); padding: 6px 12px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
         .connect-btn:active { transform: scale(0.95); }
-        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); cursor: default; pointer-events: none; } /* Блокируем нажатие */
+        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); cursor: default; pointer-events: none; }
 
         .content { padding: 10px 20px; max-width: 600px; margin: 0 auto; }
         .sec-title { font-size: 13px; font-weight: 800; margin: 20px 0; text-align: center; letter-spacing: 2px; color: var(--muted); }
@@ -83,7 +81,8 @@
         .modal.show { display: flex; opacity: 1; }
         
         .pay-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .pay-title { font-size: 18px; font-weight: 900; margin-bottom: 20px; letter-spacing: 1px; }
+        .pay-title { font-size: 18px; font-weight: 900; margin-bottom: 10px; letter-spacing: 1px; }
+        .pay-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 25px; }
         .pay-options { display: flex; flex-direction: column; gap: 10px; }
         .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 18px; font-size: 15px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
         .pay-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
@@ -151,7 +150,8 @@
 
     <div class="modal" id="modal">
         <div class="pay-box" id="payStep">
-            <div class="pay-title" id="modalTitle">ОТКРЫТИЕ</div>
+            <div class="pay-title" id="modalTitle">ПОДТВЕРЖДЕНИЕ</div>
+            <div class="pay-subtitle" id="modalSubtitle">Вы точно хотите потратить?</div>
             <div class="pay-options" id="payOptions"></div>
             <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:13px; font-weight: 700; letter-spacing:1px;" onclick="closeModal()">ОТМЕНА</button>
         </div>
@@ -175,10 +175,8 @@
     </div>
 
 <script>
-    // ============ КЛЮЧИ ============
     const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
-    
     let supabase = null;
     try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
 
@@ -208,7 +206,8 @@
         { name: "Durov's Cap", val: 180, icon: imgs.p3 }, { name: "Event Horizon", val: 250, icon: imgs.p4 }
     ];
 
-    let userStars = 1000;
+    // БАЛАНС ОБНУЛЁН
+    let userStars = 0;
     let inventory = [];
     let telegramId = null;
     let currentCase = null;
@@ -219,72 +218,49 @@
     const tg = window.Telegram?.WebApp;
     if(tg) { tg.expand(); tg.setHeaderColor('#050505'); tg.setBackgroundColor('#050505'); }
 
-    // ============ ЖЕСТКИЙ ТАЙМЕР НА ЗАГРУЗКУ ============
-    // Если через 2.5 секунды что-то не загрузилось, экран принудительно исчезает
     setTimeout(() => {
         document.getElementById('preloader').style.opacity = '0';
         document.getElementById('app').style.opacity = '1';
         setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
     }, 2500);
 
-    // ============ ЗВЕЗДЫ (КРАСИВЫЕ) ============
     function drawStars() {
         const canvas = document.getElementById('stars-canvas');
         const ctx = canvas.getContext('2d');
         let w = canvas.width = window.innerWidth;
         let h = canvas.height = window.innerHeight;
-        
-        // Создаем 100 звезд с разными параметрами
         const stars = Array.from({length: 100}).map(() => ({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            size: Math.random() * 1.5 + 0.5,
-            speed: Math.random() * 0.3 + 0.05,
-            opacity: Math.random() * 0.8 + 0.2,
-            twinkleSpeed: Math.random() * 0.02 + 0.01
+            x: Math.random() * w, y: Math.random() * h, size: Math.random() * 1.5 + 0.5,
+            speed: Math.random() * 0.3 + 0.05, opacity: Math.random() * 0.8 + 0.2, twinkleSpeed: Math.random() * 0.02 + 0.01
         }));
-
         function render() {
             ctx.clearRect(0, 0, w, h);
             stars.forEach(st => {
-                // Движение вниз
                 st.y += st.speed;
                 if(st.y > h) { st.y = 0; st.x = Math.random() * w; }
-                
-                // Мерцание
                 st.opacity += st.twinkleSpeed;
                 if(st.opacity > 1 || st.opacity < 0.2) st.twinkleSpeed *= -1;
-
-                // Рисуем звезду
                 ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity})`;
-                ctx.beginPath();
-                ctx.arc(st.x, st.y, st.size, 0, Math.PI*2);
-                ctx.fill();
-                
-                // Свечение вокруг звезды
+                ctx.beginPath(); ctx.arc(st.x, st.y, st.size, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity * 0.1})`;
-                ctx.beginPath();
-                ctx.arc(st.x, st.y, st.size * 3, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(st.x, st.y, st.size * 3, 0, Math.PI*2); ctx.fill();
             });
             requestAnimationFrame(render);
         }
         render();
     }
 
-    // ============ TON ============
     function initTon() {
         try {
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
                 manifestUrl: location.origin + '/tonconnect-manifest.json',
                 uiPreferences: { theme: 'DARK' }
             });
-
             tonConnectUI.onStatusChange(wallet => {
                 if (wallet) {
                     const shortAddr = wallet.account.address.slice(0, 4) + '...' + wallet.account.address.slice(-4);
                     document.getElementById('tonText').textContent = shortAddr;
-                    document.getElementById('tonBtn').classList.add('connected'); // Добавляет стиль блокировки
+                    document.getElementById('tonBtn').classList.add('connected');
                     fetchTonBalance(wallet.account.address);
                 } else {
                     document.getElementById('tonText').textContent = 'Привязать кошелек';
@@ -305,19 +281,16 @@
         } catch(e) {}
     }
 
-    function handleTonClick() {
-        // Если кнопка имеет класс connected, она заблокирована (pointer-events: none)
-        if (tonConnectUI) tonConnectUI.openModal();
-    }
+    function handleTonClick() { if (tonConnectUI) tonConnectUI.openModal(); }
 
-    // ============ SUPABASE ============
     async function loadPlayerData() {
         if (!supabase || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
         telegramId = tg.initDataUnsafe.user.id;
         try {
             const { data, error } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
             if (error && error.code === 'PGRST116') {
-                const { data: newData, error: insertError } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }]).select().single();
+                // Создаём с балансом 0
+                const { data: newData, error: insertError } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 0, inventory: [] }]).select().single();
                 if (!insertError && newData) { userStars = newData.stars; inventory = newData.inventory || []; }
             } else if (data) {
                 userStars = data.stars;
@@ -331,21 +304,11 @@
         try { await supabase.from('players').update({ stars: userStars, inventory: inventory, updated_at: new Date() }).eq('telegram_id', telegramId); } catch(e) {}
     }
 
-    // ============ ИНИЦИАЛИЗАЦИЯ ============
     function init() {
         renderCases();
         initTon();
         drawStars();
-        
-        // Загружаем данные из базы
-        loadPlayerData().then(() => {
-            updateUI();
-            renderInv();
-            // Если база ответила быстрее 2.5 секунд, убираем прелоадер сразу
-            document.getElementById('preloader').style.opacity = '0';
-            document.getElementById('app').style.opacity = '1';
-            setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
-        });
+        loadPlayerData().then(() => { updateUI(); renderInv(); });
     }
 
     function renderCases() {
@@ -371,12 +334,14 @@
         document.getElementById('invContent').style.display = tab === 'inv' ? 'block' : 'none';
     }
 
+    // ОКНО ПОДТВЕРЖДЕНИЯ (как в Gorilla)
     function openCase(c) {
         currentCase = c;
         document.getElementById('modalTitle').textContent = c.name;
+        document.getElementById('modalSubtitle').textContent = `Вы точно хотите потратить ${c.price} ⭐ или ${(c.price / TON_RATE).toFixed(2)} TON?`;
         document.getElementById('payOptions').innerHTML = `
-            <button class="pay-btn" onclick="payStars()"><span>ЗВЕЗДЫ</span><span>${c.price} ⭐</span></button>
-            <button class="pay-btn" onclick="payTon()"><span>TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span></button>
+            <button class="pay-btn" onclick="payStars()"><span>СПИСАТЬ ЗВЕЗДЫ</span><span>${c.price} ⭐</span></button>
+            <button class="pay-btn" onclick="payTon()"><span>ОПЛАТИТЬ TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span></button>
         `;
         document.getElementById('payStep').style.display = 'block';
         document.getElementById('spinStep').style.display = 'none';
@@ -396,7 +361,7 @@
 
     async function payStars() {
         if(userStars < currentCase.price) {
-            showError("У вас недостаточно звезд для открытия этого кейса.");
+            showError(`Недостаточно звезд. У вас ${userStars}, нужно ${currentCase.price}.`);
             return;
         }
         userStars -= currentCase.price;
@@ -411,13 +376,11 @@
             showError("Сначала привяжите кошелёк TON в верхней панели.");
             return;
         }
-        
         const amountTon = currentCase.price / TON_RATE;
         if(parseFloat(tonBalance) < amountTon) {
             showError(`На кошельке недостаточно TON. Нужно: ${amountTon.toFixed(2)} TON.`);
             return;
         }
-
         try {
             const { beginCell } = TON_CORE;
             const cell = beginCell().storeUint(0, 32).storeStringTail('INV_' + Date.now()).endCell();
@@ -461,7 +424,6 @@
         document.getElementById('resImg').src = prize.icon;
         document.getElementById('resName').textContent = prize.name;
         document.getElementById('resPrice').textContent = prize.val + " ⭐";
-        
         inventory.push(prize);
         await savePlayerData();
         renderInv();
