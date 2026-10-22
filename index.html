@@ -3,157 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMIC VAULT</title>
+    <title>ЧЕРНАЯ ДЫРА | CASES</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <style>
         :root { 
-            --bg: #050505; 
-            --card: rgba(20, 20, 25, 0.6); 
-            --border: rgba(255,255,255,0.08); 
-            --text: #fff; 
-            --muted: #888; 
-            --ton: #0098EA; 
-            --accent: #9d00ff;
+            --bg: #000000; 
+            --card: rgba(15, 15, 15, 0.8); 
+            --border: rgba(255,255,255,0.1); 
+            --text: #ffffff; 
+            --muted: #666; 
+            --accent: #ffffff;
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Courier New', Courier, monospace; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
+        /* Звездный фон */
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
         #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s; }
         .orbit-loader { width: 80px; height: 80px; position: relative; margin-bottom: 30px; }
         .orbit-loader::before, .orbit-loader::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
-        .orbit-loader::before { inset: 0; border-top-color: var(--accent); animation: spin 1.5s linear infinite; }
-        .orbit-loader::after { inset: 15px; border-bottom-color: var(--accent); animation: spin 2s linear infinite reverse; }
-        .load-text { font-size: 12px; letter-spacing: 3px; color: #666; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
-        .load-bar-container { width: 150px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-        .load-bar-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; box-shadow: 0 0 10px var(--accent); }
+        .orbit-loader::before { inset: 0; border-top-color: #fff; animation: spin 1.5s linear infinite; }
+        .orbit-loader::after { inset: 15px; border-bottom-color: #fff; animation: spin 2s linear infinite reverse; }
+        .load-text { font-size: 12px; letter-spacing: 3px; color: #888; text-transform: uppercase; margin-bottom: 10px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         #app { opacity: 0; transition: opacity 0.5s; }
         
-        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 50; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
-        .logo { font-size: 16px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        .balances { display: flex; gap: 8px; align-items: center; }
-        .bal { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 30px; }
-        .bal svg { width: 14px; height: 14px; fill: #fff; }
+        /* Хедер */
+        .header { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 50; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .logo { font-size: 20px; font-weight: 900; letter-spacing: 3px; text-shadow: 0 0 15px rgba(255,255,255,0.5); text-align: center; line-height: 1.2; }
+        .balances { display: flex; gap: 10px; align-items: center; }
+        .bal { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 10px 20px; border-radius: 12px; }
         
-        .connect-btn { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: rgba(0,152,234,0.1); border: 1px solid rgba(0,152,234,0.3); color: var(--ton); padding: 6px 12px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
-        .connect-btn:active { transform: scale(0.95); }
-        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); cursor: default; pointer-events: none; }
+        .topup-btn { background: #fff; color: #000; font-weight: 900; padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer; font-size: 14px; text-transform: uppercase; transition: 0.2s; }
+        .topup-btn:active { transform: scale(0.95); }
 
-        .content { padding: 10px 20px; max-width: 600px; margin: 0 auto; }
-        .sec-title { font-size: 13px; font-weight: 800; margin: 20px 0; text-align: center; letter-spacing: 2px; color: var(--muted); }
+        .content { padding: 10px 20px; max-width: 500px; margin: 0 auto; }
         .grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 100px; }
         
+        /* Карточка кейса (Кристалл) */
         .card { 
             position: relative; 
-            background: linear-gradient(135deg, rgba(30,30,40,0.8) 0%, rgba(10,10,15,0.9) 100%); 
+            background: rgba(10,10,10,0.8); 
             border: 1px solid var(--border); 
-            border-radius: 24px; 
-            padding: 15px; 
+            border-radius: 16px; 
+            padding: 20px; 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; 
             cursor: pointer; 
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s; 
+            transition: 0.2s; 
         }
-        .card:active { transform: scale(0.96); }
-        .card.premium { border-color: rgba(157,0,255,0.3); box-shadow: 0 5px 20px rgba(157,0,255,0.1); }
+        .card:active { transform: scale(0.97); background: rgba(20,20,20,0.9); }
+        
+        /* Разноцветные кристаллы (имитация картинок) */
+        .c-img { width: 70px; height: 70px; margin-right: 20px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        .c-img.c1 { background: radial-gradient(circle, #fff, #555); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .c-img.c2 { background: radial-gradient(circle, #00d4ff, #0055ff); box-shadow: 0 0 20px rgba(0,212,255,0.4); color: #fff;}
+        .c-img.c3 { background: radial-gradient(circle, #ff00d4, #8800ff); box-shadow: 0 0 20px rgba(255,0,212,0.4); color: #fff;}
+        .c-img.c4 { background: radial-gradient(circle, #ffd700, #ff5500); box-shadow: 0 0 20px rgba(255,215,0,0.4); color: #000;}
+        .c-img.c5 { background: radial-gradient(circle, #ff0033, #000); box-shadow: 0 0 30px rgba(255,0,51,0.6); color: #fff;}
 
-        .c-img { width: 60px; height: 60px; object-fit: contain; margin-right: 15px; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
-        .c-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-        .c-name { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; }
-        .c-desc { font-size: 11px; color: var(--muted); }
+        .c-info { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .c-name { font-size: 16px; font-weight: 900; letter-spacing: 1px; }
+        .c-desc { font-size: 11px; color: var(--muted); text-transform: uppercase; }
         .c-prices { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        .c-p-stars { font-size: 15px; font-weight: 800; color: #fff; }
-        .c-p-ton { font-size: 11px; color: var(--ton); font-weight: 700; }
+        .c-p-stars { font-size: 18px; font-weight: 900; color: #fff; }
 
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #050505 60%, transparent); z-index: 50; max-width: 600px; left: 50%; transform: translateX(-50%); }
-        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; letter-spacing: 1px; }
-        .nav-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.95); }
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; display: flex; gap: 10px; background: #000; z-index: 50; max-width: 500px; left: 50%; transform: translateX(-50%); border-top: 1px solid var(--border); }
+        .nav-btn { flex: 1; background: transparent; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; font-size: 14px; font-weight: 900; color: #fff; cursor: pointer; transition: 0.2s; }
+        .nav-btn:active { background: rgba(255,255,255,0.1); }
 
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal.show { display: flex; opacity: 1; }
         
-        .pay-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .pay-title { font-size: 18px; font-weight: 900; margin-bottom: 10px; letter-spacing: 1px; }
-        .pay-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 25px; }
+        .pay-box { background: #050505; border: 1px solid var(--border); border-radius: 20px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; }
+        .pay-title { font-size: 20px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .pay-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 25px; }
         .pay-options { display: flex; flex-direction: column; gap: 10px; }
-        .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 18px; font-size: 15px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
-        .pay-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
+        .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 18px; font-size: 15px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
+        .pay-btn:active { background: rgba(255,255,255,0.1); }
+
+        .roulette-box { width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .r-track { width: 100%; height: 120px; background: rgba(10,10,10,0.9); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; position: relative; display: flex; align-items: center; }
+        .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 15px; transition: transform 0.1s linear; }
+        .r-item { width: 90px; height: 90px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .r-item img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
+        .r-item span { font-size: 10px; font-weight: 800; color: var(--muted); }
+        .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px #fff; }
+
+        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 350px; }
+        .result-img { width: 120px; height: 120px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 30px #fff); }
+        .result-name { font-size: 24px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; }
+        .result-btn { background: #fff; color: #000; border: none; border-radius: 12px; padding: 16px; width: 100%; font-size: 15px; font-weight: 900; margin-top: 30px; cursor: pointer; text-transform: uppercase; }
         
-        .err-box { background: #1a0505; border: 1px solid #ff3333; border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 0 40px rgba(255,0,0,0.2); }
-        .err-title { color: #ff3333; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
-        .err-desc { color: #ccc; font-size: 14px; margin-bottom: 25px; }
-        .err-btn { background: #ff3333; color: #fff; border: none; border-radius: 20px; padding: 14px; width: 100%; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .err-btn:active { transform: scale(0.95); }
+        /* Коллекция */
+        #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding-bottom: 100px; }
+        .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .inv-card img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px; }
+        .inv-name { font-size: 12px; font-weight: 900; margin-bottom: 4px; }
+        .inv-price { font-size: 11px; color: var(--muted); }
 
-        .roulette-box { width: 100%; max-width: 600px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .r-track { width: 100%; height: 140px; background: rgba(20,20,20,0.9); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; position: relative; display: flex; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
-        .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 20px; transition: transform 0.1s linear; }
-        .r-item { width: 100px; height: 100px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-        .r-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
-        .r-item span { font-size: 11px; font-weight: 800; color: var(--muted); }
-        .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px #fff, 0 0 30px var(--accent); }
-
-        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 400px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .result-img { width: 150px; height: 150px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 40px rgba(255,255,255,0.4)); }
-        .result-name { font-size: 24px; font-weight: 900; margin-bottom: 5px; }
-        .result-btn { background: #fff; color: #000; border: none; border-radius: 30px; padding: 16px; width: 100%; font-size: 15px; font-weight: 900; margin-top: 30px; cursor: pointer; letter-spacing: 1px; transition: 0.2s; }
-        .result-btn:active { transform: scale(0.95); }
-
-        #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 100px; }
-        .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.2s; }
-        .inv-card:active { transform: scale(0.95); }
-        .inv-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
-        .inv-name { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
-        .inv-price { font-size: 11px; color: var(--muted); font-weight: 600; }
+        /* Модалка пополнения */
+        .topup-box { background: #050505; border: 1px solid #fff; border-radius: 20px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; }
+        .topup-input { width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 15px; color: #fff; font-size: 20px; text-align: center; margin-bottom: 15px; font-weight: 900; outline: none; }
+        .topup-input:focus { border-color: #fff; }
+        .topup-confirm { background: #fff; color: #000; font-weight: 900; padding: 15px; border-radius: 8px; border: none; width: 100%; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div id="preloader">
         <div class="orbit-loader"></div>
-        <div class="load-text" id="loadText">Синхронизация...</div>
-        <div class="load-bar-container"><div class="load-bar-fill" id="loadBar"></div></div>
+        <div class="load-text">ЗАГРУЗКА ВСЕЛЕННОЙ...</div>
     </div>
     <div id="app">
         <canvas id="stars-canvas"></canvas>
+        
         <div class="header">
-            <div class="logo">COSMIC VAULT</div>
+            <div class="logo">ЧЕРНАЯ ДЫРА</div>
             <div class="balances">
-                <div class="bal"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span id="balStars">0</span></div>
-                <div class="connect-btn" id="tonBtn" onclick="handleTonClick()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    <span id="tonText">Привязать кошелек</span>
-                </div>
+                <div class="bal">💎 <span id="balStars">0</span></div>
+                <button class="topup-btn" onclick="openTopup()">ПОПОЛНИТЬ</button>
             </div>
         </div>
+
         <div class="content" id="mainContent">
-            <div class="sec-title">ВЫБЕРИТЕ КЕЙС</div>
             <div class="grid" id="casesGrid"></div>
         </div>
+
         <div class="content" id="invContent" style="display:none;">
-            <div class="sec-title">ВАША КОЛЛЕКЦИЯ</div>
-            <div id="invList"></div>
+            <div class="grid" id="invList"></div>
         </div>
+
         <div class="nav">
             <button class="nav-btn" onclick="switchTab('cases')">КЕЙСЫ</button>
-            <button class="nav-btn" onclick="switchTab('inv')">КОЛЛЕКЦИЯ</button>
+            <button class="nav-btn" onclick="switchTab('inv')">ИНВЕНТАРЬ</button>
         </div>
     </div>
 
+    <!-- Окно оплаты -->
     <div class="modal" id="modal">
         <div class="pay-box" id="payStep">
             <div class="pay-title" id="modalTitle">ПОДТВЕРЖДЕНИЕ</div>
-            <div class="pay-subtitle" id="modalSubtitle">Вы точно хотите потратить?</div>
+            <div class="pay-subtitle" id="modalSubtitle">Списать средства?</div>
             <div class="pay-options" id="payOptions"></div>
-            <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:13px; font-weight: 700; letter-spacing:1px;" onclick="closeModal()">ОТМЕНА</button>
+            <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:12px; font-weight: 800; text-transform: uppercase;" onclick="closeModal()">ОТМЕНА</button>
         </div>
         <div class="roulette-box" id="spinStep" style="display:none;">
             <div class="r-track"><div class="r-marker"></div><div class="r-items" id="rItems"></div></div>
@@ -161,27 +157,29 @@
         <div class="result-box" id="resultStep" style="display:none;">
             <img src="" class="result-img" id="resImg">
             <div class="result-name" id="resName">Название</div>
-            <div style="color:var(--muted); font-size:14px; font-weight: 700;" id="resPrice">0 ⭐</div>
-            <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ В КОЛЛЕКЦИЮ</button>
+            <div style="color:var(--muted); font-size:12px; font-weight: 800;" id="resPrice">0</div>
+            <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ</button>
         </div>
     </div>
 
-    <div class="modal" id="errModal">
-        <div class="err-box">
-            <div class="err-title">ОШИБКА</div>
-            <div class="err-desc" id="errDesc">Что-то пошло не так.</div>
-            <button class="err-btn" onclick="document.getElementById('errModal').classList.remove('show')">ПОНЯТНО</button>
+    <!-- Окно пополнения -->
+    <div class="modal" id="topupModal">
+        <div class="topup-box">
+            <div class="pay-title">ПОПОЛНЕНИЕ</div>
+            <div class="pay-subtitle" style="margin-bottom:15px;">Введите сумму в звездах</div>
+            <input type="number" class="topup-input" id="topupAmount" placeholder="1000">
+            <button class="topup-confirm" onclick="confirmTopup()">ОПЛАТИТЬ TON</button>
+            <button style="margin-top:15px; background:none; border:none; color:var(--muted); font-size:12px; font-weight: 800; text-transform: uppercase;" onclick="document.getElementById('topupModal').classList.remove('show')">ОТМЕНА</button>
         </div>
     </div>
 
 <script>
+    // Ключи Supabase
     const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
-    let supabase = null;
-    try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
+    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
-    const TON_RATE = 100; 
+    // Твои подарки (картинки оставил твои, но названия другие)
     const imgPath = "img/"; 
     const imgs = {
         p1: imgPath + "IMG_6767.jpeg", p2: imgPath + "IMG_6766.jpeg", p3: imgPath + "IMG_6765.jpeg",
@@ -191,124 +189,73 @@
     };
 
     const cases = [
-        { id: 1, name: "ЛУННАЯ ОРБИТА", desc: "Базовые артефакты", price: 15, premium: false, max: 25, img: imgs.p1 },
-        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Редкие частицы", price: 50, premium: false, max: 80, img: imgs.p2 },
-        { id: 3, name: "ТУМАННОСТЬ АНДРОМЕДЫ", desc: "Древние реликвии", price: 150, premium: true, max: 250, img: imgs.p3 },
-        { id: 4, name: "МЛЕЧНЫЙ ПУТЬ", desc: "Эпические NFT", price: 300, premium: true, max: 400, img: imgs.p4 },
-        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный дроп", price: 500, premium: true, max: 1000, img: imgs.p5 }
+        { id: 1, name: "ЛУННЫЙ СВЕТ", desc: "Белый кристалл", price: 15, max: 25, cssClass: "c1", img: imgs.p1 },
+        { id: 2, name: "АСТЕРОИД", desc: "Синий кристалл", price: 50, max: 80, cssClass: "c2", img: imgs.p2 },
+        { id: 3, name: "ТУМАННОСТЬ", desc: "Розовый кристалл", price: 150, max: 250, cssClass: "c3", img: imgs.p3 },
+        { id: 4, name: "СВЕРХНОВАЯ", desc: "Золотой кристалл", price: 300, max: 400, cssClass: "c4", img: imgs.p4 },
+        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Кровавый кристалл", price: 500, max: 1000, cssClass: "c5", img: imgs.p5 }
     ];
 
     const nftPool = [
-        { name: "Tiny Heart", val: 10, icon: imgs.p6 }, { name: "Space Bear", val: 15, icon: imgs.p7 },
-        { name: "Cosmic Cake", val: 20, icon: imgs.p8 }, { name: "Star", val: 25, icon: imgs.p9 },
-        { name: "Gift Box", val: 40, icon: imgs.p10 }, { name: "Diamond Ring", val: 60, icon: imgs.p11 },
-        { name: "Planet Core", val: 80, icon: imgs.p1 }, { name: "Plush Pepe", val: 120, icon: imgs.p2 },
-        { name: "Durov's Cap", val: 180, icon: imgs.p3 }, { name: "Event Horizon", val: 250, icon: imgs.p4 }
+        { name: "HEART", val: 10, icon: imgs.p6 }, { name: "BEAR", val: 15, icon: imgs.p7 },
+        { name: "CAKE", val: 20, icon: imgs.p8 }, { name: "STAR", val: 25, icon: imgs.p9 },
+        { name: "GIFT", val: 40, icon: imgs.p10 }, { name: "RING", val: 60, icon: imgs.p11 },
+        { name: "PLANET", val: 80, icon: imgs.p1 }, { name: "PEPE", val: 120, icon: imgs.p2 },
+        { name: "DUROV", val: 180, icon: imgs.p3 }, { name: "HORIZON", val: 250, icon: imgs.p4 }
     ];
 
-    // БАЛАНС ОБНУЛЁН
     let userStars = 0;
     let inventory = [];
     let telegramId = null;
     let currentCase = null;
     let isSpinning = false;
-    let tonConnectUI = null;
-    let tonBalance = 0;
+    let topupStars = 0;
 
     const tg = window.Telegram?.WebApp;
-    if(tg) { tg.expand(); tg.setHeaderColor('#050505'); tg.setBackgroundColor('#050505'); }
+    if(tg) { tg.expand(); tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000'); }
 
-    setTimeout(() => {
-        document.getElementById('preloader').style.opacity = '0';
-        document.getElementById('app').style.opacity = '1';
-        setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
-    }, 2500);
+    setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; document.getElementById('app').style.opacity = '1'; setTimeout(() => document.getElementById('preloader').style.display = 'none', 300); }, 2000);
 
     function drawStars() {
         const canvas = document.getElementById('stars-canvas');
         const ctx = canvas.getContext('2d');
         let w = canvas.width = window.innerWidth;
         let h = canvas.height = window.innerHeight;
-        const stars = Array.from({length: 100}).map(() => ({
-            x: Math.random() * w, y: Math.random() * h, size: Math.random() * 1.5 + 0.5,
-            speed: Math.random() * 0.3 + 0.05, opacity: Math.random() * 0.8 + 0.2, twinkleSpeed: Math.random() * 0.02 + 0.01
-        }));
+        const stars = Array.from({length: 120}).map(() => ({ x: Math.random() * w, y: Math.random() * h, s: Math.random() * 2, v: Math.random() * 0.5 + 0.1 }));
         function render() {
             ctx.clearRect(0, 0, w, h);
             stars.forEach(st => {
-                st.y += st.speed;
+                st.y += st.v;
                 if(st.y > h) { st.y = 0; st.x = Math.random() * w; }
-                st.opacity += st.twinkleSpeed;
-                if(st.opacity > 1 || st.opacity < 0.2) st.twinkleSpeed *= -1;
-                ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity})`;
-                ctx.beginPath(); ctx.arc(st.x, st.y, st.size, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity * 0.1})`;
-                ctx.beginPath(); ctx.arc(st.x, st.y, st.size * 3, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.3})`;
+                ctx.beginPath(); ctx.arc(st.x, st.y, st.s, 0, Math.PI*2); ctx.fill();
             });
             requestAnimationFrame(render);
         }
         render();
     }
 
-    function initTon() {
-        try {
-            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                manifestUrl: location.origin + '/tonconnect-manifest.json',
-                uiPreferences: { theme: 'DARK' }
-            });
-            tonConnectUI.onStatusChange(wallet => {
-                if (wallet) {
-                    const shortAddr = wallet.account.address.slice(0, 4) + '...' + wallet.account.address.slice(-4);
-                    document.getElementById('tonText').textContent = shortAddr;
-                    document.getElementById('tonBtn').classList.add('connected');
-                    fetchTonBalance(wallet.account.address);
-                } else {
-                    document.getElementById('tonText').textContent = 'Привязать кошелек';
-                    document.getElementById('tonBtn').classList.remove('connected');
-                }
-            });
-        } catch(e) { console.log("TON Init Error:", e); }
-    }
-
-    async function fetchTonBalance(addr) {
-        try {
-            const r = await fetch(`https://tonapi.io/v2/accounts/${addr}`);
-            const d = await r.json();
-            if (d.balance) {
-                tonBalance = (d.balance / 1e9).toFixed(2);
-                document.getElementById('tonText').textContent = `💎 ${tonBalance} TON`;
-            }
-        } catch(e) {}
-    }
-
-    function handleTonClick() { if (tonConnectUI) tonConnectUI.openModal(); }
-
-    async function loadPlayerData() {
-        if (!supabase || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
+    async function loadData() {
+        if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
         telegramId = tg.initDataUnsafe.user.id;
         try {
             const { data, error } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
             if (error && error.code === 'PGRST116') {
-                // Создаём с балансом 0
-                const { data: newData, error: insertError } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 0, inventory: [] }]).select().single();
-                if (!insertError && newData) { userStars = newData.stars; inventory = newData.inventory || []; }
-            } else if (data) {
-                userStars = data.stars;
-                inventory = data.inventory || [];
-            }
+                const { data: newData } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 0, inventory: [] }]).select().single();
+                if (newData) { userStars = newData.stars; inventory = newData.inventory || []; }
+            } else if (data) { userStars = data.stars; inventory = data.inventory || []; }
         } catch(e) {}
     }
 
-    async function savePlayerData() {
-        if (!supabase || !telegramId) return;
-        try { await supabase.from('players').update({ stars: userStars, inventory: inventory, updated_at: new Date() }).eq('telegram_id', telegramId); } catch(e) {}
+    async function saveData() {
+        if (!telegramId) return;
+        try { await supabase.from('players').update({ stars: userStars, inventory: inventory }).eq('telegram_id', telegramId); } catch(e) {}
     }
 
     function init() {
         renderCases();
-        initTon();
         drawStars();
-        loadPlayerData().then(() => { updateUI(); renderInv(); });
+        loadData().then(() => { updateUI(); renderInv(); });
     }
 
     function renderCases() {
@@ -316,80 +263,56 @@
         g.innerHTML = '';
         cases.forEach(c => {
             const div = document.createElement('div');
-            div.className = 'card' + (c.premium ? ' premium' : '');
+            div.className = 'card';
             div.onclick = () => openCase(c);
             div.innerHTML = `
-                <img src="${c.img}" class="c-img">
+                <div class="c-img ${c.cssClass}">💎</div>
                 <div class="c-info"><div class="c-name">${c.name}</div><div class="c-desc">${c.desc}</div></div>
-                <div class="c-prices"><div class="c-p-stars">${c.price} ⭐</div><div class="c-p-ton">${(c.price / TON_RATE).toFixed(2)} TON</div></div>
+                <div class="c-prices"><div class="c-p-stars">${c.price} 💎</div></div>
             `;
             g.appendChild(div);
         });
     }
 
     function updateUI() { document.getElementById('balStars').textContent = userStars; }
-    
     function switchTab(tab) {
         document.getElementById('mainContent').style.display = tab === 'cases' ? 'block' : 'none';
         document.getElementById('invContent').style.display = tab === 'inv' ? 'block' : 'none';
     }
 
-    // ОКНО ПОДТВЕРЖДЕНИЯ (как в Gorilla)
+    // Пополнение баланса (пока имитация, в будущем прикрутим TON)
+    function openTopup() {
+        document.getElementById('topupModal').classList.add('show');
+    }
+    async function confirmTopup() {
+        const amount = parseInt(document.getElementById('topupAmount').value);
+        if (amount > 0) {
+            userStars += amount;
+            updateUI();
+            await saveData();
+            document.getElementById('topupModal').classList.remove('show');
+            document.getElementById('topupAmount').value = '';
+        }
+    }
+
     function openCase(c) {
         currentCase = c;
         document.getElementById('modalTitle').textContent = c.name;
-        document.getElementById('modalSubtitle').textContent = `Вы точно хотите потратить ${c.price} ⭐ или ${(c.price / TON_RATE).toFixed(2)} TON?`;
-        document.getElementById('payOptions').innerHTML = `
-            <button class="pay-btn" onclick="payStars()"><span>СПИСАТЬ ЗВЕЗДЫ</span><span>${c.price} ⭐</span></button>
-            <button class="pay-btn" onclick="payTon()"><span>ОПЛАТИТЬ TON</span><span>${(c.price / TON_RATE).toFixed(2)} TON</span></button>
-        `;
+        document.getElementById('modalSubtitle').textContent = `Списать ${c.price} кристаллов?`;
+        document.getElementById('payOptions').innerHTML = `<button class="pay-btn" onclick="payStars()"><span>ПОДТВЕРДИТЬ</span><span>-${c.price} 💎</span></button>`;
         document.getElementById('payStep').style.display = 'block';
         document.getElementById('spinStep').style.display = 'none';
         document.getElementById('resultStep').style.display = 'none';
         document.getElementById('modal').classList.add('show');
     }
 
-    function closeModal() {
-        if(isSpinning) return;
-        document.getElementById('modal').classList.remove('show');
-    }
-
-    function showError(msg) {
-        document.getElementById('errDesc').textContent = msg;
-        document.getElementById('errModal').classList.add('show');
-    }
+    function closeModal() { if(!isSpinning) document.getElementById('modal').classList.remove('show'); }
 
     async function payStars() {
-        if(userStars < currentCase.price) {
-            showError(`Недостаточно звезд. У вас ${userStars}, нужно ${currentCase.price}.`);
-            return;
-        }
+        if(userStars < currentCase.price) return alert("Недостаточно кристаллов!");
         userStars -= currentCase.price;
-        updateUI();
-        await savePlayerData();
+        updateUI(); await saveData();
         startRoulette();
-    }
-
-    async function payTon() {
-        if(!tonConnectUI || !tonConnectUI.wallet) {
-            closeModal();
-            showError("Сначала привяжите кошелёк TON в верхней панели.");
-            return;
-        }
-        const amountTon = currentCase.price / TON_RATE;
-        if(parseFloat(tonBalance) < amountTon) {
-            showError(`На кошельке недостаточно TON. Нужно: ${amountTon.toFixed(2)} TON.`);
-            return;
-        }
-        try {
-            const { beginCell } = TON_CORE;
-            const cell = beginCell().storeUint(0, 32).storeStringTail('INV_' + Date.now()).endCell();
-            await tonConnectUI.sendTransaction({
-                validUntil: Math.floor(Date.now() / 1000) + 300,
-                messages: [{ address: RECEIVER, amount: String(Math.floor(amountTon * 1e9)), payload: cell.toBoc().toString('base64') }]
-            });
-            startRoulette();
-        } catch(e) { console.log(e); }
     }
 
     function startRoulette() {
@@ -403,7 +326,7 @@
         for(let i=0; i<20; i++) {
             let item = validPool[Math.floor(Math.random() * validPool.length)];
             if(i === 15) item = prize;
-            itemsHtml += `<div class="r-item"><img src="${item.icon}"><span>${item.val} ⭐</span></div>`;
+            itemsHtml += `<div class="r-item"><img src="${item.icon}"><span>${item.val}💎</span></div>`;
         }
         track.innerHTML = itemsHtml;
         track.style.transition = 'none';
@@ -423,23 +346,23 @@
         document.getElementById('resultStep').style.display = 'flex';
         document.getElementById('resImg').src = prize.icon;
         document.getElementById('resName').textContent = prize.name;
-        document.getElementById('resPrice').textContent = prize.val + " ⭐";
+        document.getElementById('resPrice').textContent = prize.val + " кристаллов";
         inventory.push(prize);
-        await savePlayerData();
+        await saveData();
         renderInv();
     }
 
     function renderInv() {
         const g = document.getElementById('invList');
         if(inventory.length === 0) {
-            g.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#666; padding: 20px; font-size:14px;">Инвентарь пуст</div>';
+            g.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#666; padding: 20px; font-size:12px; font-weight:800;">ИНВЕНТАРЬ ПУСТ</div>';
             return;
         }
         g.innerHTML = '';
         inventory.forEach(item => {
             const div = document.createElement('div');
             div.className = 'inv-card';
-            div.innerHTML = `<img src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} ⭐</div>`;
+            div.innerHTML = `<img src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} 💎</div>`;
             g.appendChild(div);
         });
     }
