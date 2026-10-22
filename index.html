@@ -7,6 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
+    <!-- Подключаем Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #000; --card: rgba(15,15,15,0.7); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -112,23 +114,21 @@
         </div>
     </div>
 <script>
+    // ============ ТВОИ КЛЮЧИ SUPABASE ============
+    const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
+    // ===========================================
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100; 
     
-    // ТУТ ТВОИ КАРТИНКИ. ЕСЛИ ОНИ В КОРНЕ РЕПОЗИТОРИЯ - УБЕРИ "img/"
     const imgPath = "img/"; 
     const imgs = {
-        p1: imgPath + "IMG_6767.jpeg",
-        p2: imgPath + "IMG_6766.jpeg",
-        p3: imgPath + "IMG_6765.jpeg",
-        p4: imgPath + "IMG_6763.jpeg",
-        p5: imgPath + "IMG_6764.jpeg",
-        p6: imgPath + "IMG_6761.jpeg",
-        p7: imgPath + "IMG_6760.jpeg",
-        p8: imgPath + "IMG_6758.jpeg",
-        p9: imgPath + "IMG_6757.jpeg",
-        p10: imgPath + "IMG_6756.jpeg",
-        p11: imgPath + "IMG_6755.jpeg"
+        p1: imgPath + "IMG_6767.jpeg", p2: imgPath + "IMG_6766.jpeg", p3: imgPath + "IMG_6765.jpeg",
+        p4: imgPath + "IMG_6763.jpeg", p5: imgPath + "IMG_6764.jpeg", p6: imgPath + "IMG_6761.jpeg",
+        p7: imgPath + "IMG_6760.jpeg", p8: imgPath + "IMG_6758.jpeg", p9: imgPath + "IMG_6757.jpeg",
+        p10: imgPath + "IMG_6756.jpeg", p11: imgPath + "IMG_6755.jpeg"
     };
 
     const cases = [
@@ -140,20 +140,16 @@
     ];
 
     const nftPool = [
-        { name: "Tiny Heart", val: 10, icon: imgs.p6 },
-        { name: "Space Bear", val: 15, icon: imgs.p7 },
-        { name: "Cosmic Cake", val: 20, icon: imgs.p8 },
-        { name: "Star", val: 25, icon: imgs.p9 },
-        { name: "Gift Box", val: 40, icon: imgs.p10 },
-        { name: "Diamond Ring", val: 60, icon: imgs.p11 },
-        { name: "Planet Core", val: 80, icon: imgs.p1 },
-        { name: "Plush Pepe", val: 120, icon: imgs.p2 },
-        { name: "Durov's Cap", val: 180, icon: imgs.p3 },
-        { name: "Event Horizon", val: 250, icon: imgs.p4 }
+        { name: "Tiny Heart", val: 10, icon: imgs.p6 }, { name: "Space Bear", val: 15, icon: imgs.p7 },
+        { name: "Cosmic Cake", val: 20, icon: imgs.p8 }, { name: "Star", val: 25, icon: imgs.p9 },
+        { name: "Gift Box", val: 40, icon: imgs.p10 }, { name: "Diamond Ring", val: 60, icon: imgs.p11 },
+        { name: "Planet Core", val: 80, icon: imgs.p1 }, { name: "Plush Pepe", val: 120, icon: imgs.p2 },
+        { name: "Durov's Cap", val: 180, icon: imgs.p3 }, { name: "Event Horizon", val: 250, icon: imgs.p4 }
     ];
 
     let userStars = 1000;
-    let inventory = JSON.parse(localStorage.getItem('cv_inv_v6')) || [];
+    let inventory = [];
+    let telegramId = null;
     let currentCase = null;
     let isSpinning = false;
     let tonConnectUI = null;
@@ -161,25 +157,75 @@
     const tg = window.Telegram?.WebApp;
     if(tg) { tg.expand(); tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000'); }
 
+    // ============ ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ============
+    async function loadPlayerData() {
+        if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+            console.warn("Нет данных Telegram");
+            return;
+        }
+        telegramId = tg.initDataUnsafe.user.id;
+
+        // Пытаемся найти игрока в базе
+        const { data, error } = await supabase
+            .from('players')
+            .select('*')
+            .eq('telegram_id', telegramId)
+            .single();
+
+        if (error && error.code === 'PGRST116') {
+            // Если игрока нет (ошибка PGRST116 = строка не найдена), создаём новую
+            const { data: newData, error: insertError } = await supabase
+                .from('players')
+                .insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }])
+                .select()
+                .single();
+            
+            if (insertError) {
+                console.error("Ошибка создания игрока:", insertError);
+                userStars = 1000;
+                inventory = [];
+            } else {
+                userStars = newData.stars;
+                inventory = newData.inventory || [];
+            }
+        } else if (data) {
+            userStars = data.stars;
+            inventory = data.inventory || [];
+        } else if (error) {
+            console.error("Ошибка загрузки:", error);
+        }
+    }
+
+    // ============ СОХРАНЕНИЕ В SUPABASE ============
+    async function savePlayerData() {
+        if (!telegramId) return;
+        const { error } = await supabase
+            .from('players')
+            .update({ stars: userStars, inventory: inventory, updated_at: new Date() })
+            .eq('telegram_id', telegramId);
+        
+        if (error) console.error("Ошибка сохранения:", error);
+    }
+
+    // ============ ПРЕЛОАДЕР ============
     let loadP = 0;
-    const loadInterval = setInterval(() => {
+    const loadInterval = setInterval(async () => {
         loadP += Math.random() * 15;
         if(loadP > 100) loadP = 100;
         document.getElementById('loadBar').style.width = loadP + '%';
         if(loadP === 100) {
             clearInterval(loadInterval);
-            setTimeout(() => {
-                document.getElementById('preloader').style.opacity = '0';
-                document.getElementById('app').style.opacity = '1';
-                setTimeout(() => document.getElementById('preloader').style.display = 'none', 500);
-            }, 400);
+            await loadPlayerData(); // Загружаем данные перед показом
+            updateUI();
+            renderInv();
+            document.getElementById('preloader').style.opacity = '0';
+            document.getElementById('app').style.opacity = '1';
+            setTimeout(() => document.getElementById('preloader').style.display = 'none', 500);
         }
     }, 200);
 
     function init() {
-        updateUI();
         renderCases();
-        renderInv();
         try {
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
                 manifestUrl: location.origin + '/tonconnect-manifest.json',
@@ -229,10 +275,11 @@
         document.getElementById('modal').classList.remove('show');
     }
 
-    function payStars() {
+    async function payStars() {
         if(userStars < currentCase.price) return alert("Недостаточно звезд!");
         userStars -= currentCase.price;
         updateUI();
+        await savePlayerData(); // Сохраняем списание
         startRoulette();
     }
 
@@ -275,15 +322,16 @@
         }, 100);
     }
 
-    function showResult(prize) {
+    async function showResult(prize) {
         isSpinning = false;
         document.getElementById('spinStep').style.display = 'none';
         document.getElementById('resultStep').style.display = 'flex';
         document.getElementById('resImg').src = prize.icon;
         document.getElementById('resName').textContent = prize.name;
         document.getElementById('resPrice').textContent = prize.val + " ⭐";
+        
         inventory.push(prize);
-        localStorage.setItem('cv_inv_v6', JSON.stringify(inventory));
+        await savePlayerData(); // Сохраняем выигрыш в базу
         renderInv();
     }
 
