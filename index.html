@@ -16,16 +16,15 @@
             --text: #fff; 
             --muted: #888; 
             --ton: #0098EA; 
-            --accent: #9d00ff; /* Фиолетовый акцент */
+            --accent: #9d00ff;
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         
-        /* Звездный фон */
+        /* Красивый звездный фон */
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
-        /* Прелоадер */
-        #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s; }
         .orbit-loader { width: 80px; height: 80px; position: relative; margin-bottom: 30px; }
         .orbit-loader::before, .orbit-loader::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
         .orbit-loader::before { inset: 0; border-top-color: var(--accent); animation: spin 1.5s linear infinite; }
@@ -37,22 +36,21 @@
 
         #app { opacity: 0; transition: opacity 0.5s; }
         
-        /* Хедер */
         .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 50; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
         .logo { font-size: 16px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         .balances { display: flex; gap: 8px; align-items: center; }
-        .bal { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 30px; transition: 0.2s; }
+        .bal { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 30px; }
         .bal svg { width: 14px; height: 14px; fill: #fff; }
+        
+        /* Кнопка TON */
         .connect-btn { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; background: rgba(0,152,234,0.1); border: 1px solid rgba(0,152,234,0.3); color: var(--ton); padding: 6px 12px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
-        .connect-btn:active { transform: scale(0.95); background: rgba(0,152,234,0.2); }
-        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); }
+        .connect-btn:active { transform: scale(0.95); }
+        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); cursor: default; pointer-events: none; } /* Блокируем нажатие */
 
-        /* Кейсы */
         .content { padding: 10px 20px; max-width: 600px; margin: 0 auto; }
         .sec-title { font-size: 13px; font-weight: 800; margin: 20px 0; text-align: center; letter-spacing: 2px; color: var(--muted); }
         .grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 100px; }
         
-        /* Красивая карточка кейса */
         .card { 
             position: relative; 
             background: linear-gradient(135deg, rgba(30,30,40,0.8) 0%, rgba(10,10,15,0.9) 100%); 
@@ -68,10 +66,6 @@
         }
         .card:active { transform: scale(0.96); }
         .card.premium { border-color: rgba(157,0,255,0.3); box-shadow: 0 5px 20px rgba(157,0,255,0.1); }
-        
-        /* Блик на карточке */
-        .card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); opacity: 0; transition: 0.3s; pointer-events: none; }
-        .card:active::after { opacity: 1; }
 
         .c-img { width: 60px; height: 60px; object-fit: contain; margin-right: 15px; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
         .c-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
@@ -81,30 +75,25 @@
         .c-p-stars { font-size: 15px; font-weight: 800; color: #fff; }
         .c-p-ton { font-size: 11px; color: var(--ton); font-weight: 700; }
 
-        /* Навигация */
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #050505 60%, transparent); z-index: 50; max-width: 600px; left: 50%; transform: translateX(-50%); }
         .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; letter-spacing: 1px; }
         .nav-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.95); }
 
-        /* Модалки */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal.show { display: flex; opacity: 1; }
         
-        /* Окно оплаты */
         .pay-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .pay-title { font-size: 18px; font-weight: 900; margin-bottom: 20px; letter-spacing: 1px; }
         .pay-options { display: flex; flex-direction: column; gap: 10px; }
         .pay-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 18px; font-size: 15px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; }
         .pay-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
         
-        /* Окно ошибки */
         .err-box { background: #1a0505; border: 1px solid #ff3333; border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 0 40px rgba(255,0,0,0.2); }
         .err-title { color: #ff3333; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
         .err-desc { color: #ccc; font-size: 14px; margin-bottom: 25px; }
         .err-btn { background: #ff3333; color: #fff; border: none; border-radius: 20px; padding: 14px; width: 100%; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .err-btn:active { transform: scale(0.95); }
 
-        /* Рулетка */
         .roulette-box { width: 100%; max-width: 600px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .r-track { width: 100%; height: 140px; background: rgba(20,20,20,0.9); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; position: relative; display: flex; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 20px; transition: transform 0.1s linear; }
@@ -113,7 +102,6 @@
         .r-item span { font-size: 11px; font-weight: 800; color: var(--muted); }
         .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px #fff, 0 0 30px var(--accent); }
 
-        /* Результат */
         .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 400px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .result-img { width: 150px; height: 150px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 40px rgba(255,255,255,0.4)); }
@@ -121,7 +109,6 @@
         .result-btn { background: #fff; color: #000; border: none; border-radius: 30px; padding: 16px; width: 100%; font-size: 15px; font-weight: 900; margin-top: 30px; cursor: pointer; letter-spacing: 1px; transition: 0.2s; }
         .result-btn:active { transform: scale(0.95); }
 
-        /* Коллекция */
         #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 100px; }
         .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.2s; }
         .inv-card:active { transform: scale(0.95); }
@@ -144,7 +131,7 @@
                 <div class="bal"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span id="balStars">0</span></div>
                 <div class="connect-btn" id="tonBtn" onclick="handleTonClick()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    <span id="tonText">Подключить</span>
+                    <span id="tonText">Привязать кошелек</span>
                 </div>
             </div>
         </div>
@@ -162,7 +149,6 @@
         </div>
     </div>
 
-    <!-- Модалка оплаты -->
     <div class="modal" id="modal">
         <div class="pay-box" id="payStep">
             <div class="pay-title" id="modalTitle">ОТКРЫТИЕ</div>
@@ -180,11 +166,10 @@
         </div>
     </div>
 
-    <!-- Модалка ошибки (не хватает средств) -->
     <div class="modal" id="errModal">
         <div class="err-box">
-            <div class="err-title">НЕДОСТАТОЧНО СРЕДСТВ</div>
-            <div class="err-desc" id="errDesc">Пополните баланс, чтобы открыть этот кейс.</div>
+            <div class="err-title">ОШИБКА</div>
+            <div class="err-desc" id="errDesc">Что-то пошло не так.</div>
             <button class="err-btn" onclick="document.getElementById('errModal').classList.remove('show')">ПОНЯТНО</button>
         </div>
     </div>
@@ -234,6 +219,60 @@
     const tg = window.Telegram?.WebApp;
     if(tg) { tg.expand(); tg.setHeaderColor('#050505'); tg.setBackgroundColor('#050505'); }
 
+    // ============ ЖЕСТКИЙ ТАЙМЕР НА ЗАГРУЗКУ ============
+    // Если через 2.5 секунды что-то не загрузилось, экран принудительно исчезает
+    setTimeout(() => {
+        document.getElementById('preloader').style.opacity = '0';
+        document.getElementById('app').style.opacity = '1';
+        setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
+    }, 2500);
+
+    // ============ ЗВЕЗДЫ (КРАСИВЫЕ) ============
+    function drawStars() {
+        const canvas = document.getElementById('stars-canvas');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+        
+        // Создаем 100 звезд с разными параметрами
+        const stars = Array.from({length: 100}).map(() => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            size: Math.random() * 1.5 + 0.5,
+            speed: Math.random() * 0.3 + 0.05,
+            opacity: Math.random() * 0.8 + 0.2,
+            twinkleSpeed: Math.random() * 0.02 + 0.01
+        }));
+
+        function render() {
+            ctx.clearRect(0, 0, w, h);
+            stars.forEach(st => {
+                // Движение вниз
+                st.y += st.speed;
+                if(st.y > h) { st.y = 0; st.x = Math.random() * w; }
+                
+                // Мерцание
+                st.opacity += st.twinkleSpeed;
+                if(st.opacity > 1 || st.opacity < 0.2) st.twinkleSpeed *= -1;
+
+                // Рисуем звезду
+                ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity})`;
+                ctx.beginPath();
+                ctx.arc(st.x, st.y, st.size, 0, Math.PI*2);
+                ctx.fill();
+                
+                // Свечение вокруг звезды
+                ctx.fillStyle = `rgba(255, 255, 255, ${st.opacity * 0.1})`;
+                ctx.beginPath();
+                ctx.arc(st.x, st.y, st.size * 3, 0, Math.PI*2);
+                ctx.fill();
+            });
+            requestAnimationFrame(render);
+        }
+        render();
+    }
+
+    // ============ TON ============
     function initTon() {
         try {
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -245,10 +284,10 @@
                 if (wallet) {
                     const shortAddr = wallet.account.address.slice(0, 4) + '...' + wallet.account.address.slice(-4);
                     document.getElementById('tonText').textContent = shortAddr;
-                    document.getElementById('tonBtn').classList.add('connected');
+                    document.getElementById('tonBtn').classList.add('connected'); // Добавляет стиль блокировки
                     fetchTonBalance(wallet.account.address);
                 } else {
-                    document.getElementById('tonText').textContent = 'Подключить';
+                    document.getElementById('tonText').textContent = 'Привязать кошелек';
                     document.getElementById('tonBtn').classList.remove('connected');
                 }
             });
@@ -267,9 +306,11 @@
     }
 
     function handleTonClick() {
+        // Если кнопка имеет класс connected, она заблокирована (pointer-events: none)
         if (tonConnectUI) tonConnectUI.openModal();
     }
 
+    // ============ SUPABASE ============
     async function loadPlayerData() {
         if (!supabase || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
         telegramId = tg.initDataUnsafe.user.id;
@@ -290,27 +331,21 @@
         try { await supabase.from('players').update({ stars: userStars, inventory: inventory, updated_at: new Date() }).eq('telegram_id', telegramId); } catch(e) {}
     }
 
-    let loadP = 0;
-    const loadInterval = setInterval(async () => {
-        loadP += Math.random() * 20;
-        if(loadP > 100) loadP = 100;
-        document.getElementById('loadBar').style.width = loadP + '%';
-        
-        if(loadP >= 100) {
-            clearInterval(loadInterval);
-            await Promise.race([ loadPlayerData(), new Promise(r => setTimeout(r, 3000)) ]);
-            updateUI();
-            renderInv();
-            document.getElementById('preloader').style.opacity = '0';
-            document.getElementById('app').style.opacity = '1';
-            setTimeout(() => document.getElementById('preloader').style.display = 'none', 500);
-        }
-    }, 200);
-
+    // ============ ИНИЦИАЛИЗАЦИЯ ============
     function init() {
         renderCases();
         initTon();
         drawStars();
+        
+        // Загружаем данные из базы
+        loadPlayerData().then(() => {
+            updateUI();
+            renderInv();
+            // Если база ответила быстрее 2.5 секунд, убираем прелоадер сразу
+            document.getElementById('preloader').style.opacity = '0';
+            document.getElementById('app').style.opacity = '1';
+            setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
+        });
     }
 
     function renderCases() {
@@ -354,7 +389,6 @@
         document.getElementById('modal').classList.remove('show');
     }
 
-    // КРАСИВОЕ ОКНО ОШИБКИ
     function showError(msg) {
         document.getElementById('errDesc').textContent = msg;
         document.getElementById('errModal').classList.add('show');
@@ -374,7 +408,7 @@
     async function payTon() {
         if(!tonConnectUI || !tonConnectUI.wallet) {
             closeModal();
-            showError("Сначала подключите кошелёк TON в верхней панели.");
+            showError("Сначала привяжите кошелёк TON в верхней панели.");
             return;
         }
         
@@ -396,11 +430,10 @@
     }
 
     function startRoulette() {
-        document.getElementById('payStep').style.display =';
- 'none';
-        document.getElementById('spinStep').           style.display = 'block';
-        is divSpinning = true;
-       .innerHTML = `< const validPool = nftPool.filter(i => i.val <= currentCase.max);
+        document.getElementById('payStep').style.display = 'none';
+        document.getElementById('spinStep').style.display = 'block';
+        isSpinning = true;
+        const validPool = nftPool.filter(i => i.val <= currentCase.max);
         const prize = validPool[Math.floor(Math.random() * validPool.length)];
         const track = document.getElementById('rItems');
         let itemsHtml = '';
@@ -443,28 +476,10 @@
         g.innerHTML = '';
         inventory.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'inv-cardimg src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} ⭐</div>`;
+            div.className = 'inv-card';
+            div.innerHTML = `<img src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} ⭐</div>`;
             g.appendChild(div);
         });
-    }
-
-    function drawStars() {
-        const canvas = document.getElementById('stars-canvas');
-        const ctx = canvas.getContext('2d');
-        let w = canvas.width = window.innerWidth;
-        let h = canvas.height = window.innerHeight;
-        const stars = Array.from({length: 80}).map(() => ({ x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.5, v: Math.random() * 0.5 + 0.1 }));
-        function render() {
-            ctx.clearRect(0, 0, w, h);
-            stars.forEach(st => {
-                st.y += st.v;
-                if(st.y > h) st.y = 0;
-                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.3})`;
-                ctx.beginPath(); ctx.arc(st.x, st.y, st.s, 0, Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(render);
-        }
-        render();
     }
 
     window.onload = init;
