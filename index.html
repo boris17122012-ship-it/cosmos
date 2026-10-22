@@ -3,550 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMIC VAULT | PREMIUM</title>
+    <title>COSMIC VAULT</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <style>
-        :root { 
-            --bg: #050505; 
-            --card: rgba(20,20,20,0.8); 
-            --border: rgba(255,255,255,0.1); 
-            --text: #fff; 
-            --muted: #888; 
-            --accent: #9d00ff;
-            --top-banner: linear-gradient(to bottom, rgba(0,0,0,0.5), #050505);
-        }
-        body.light-theme {
-            --bg: #f5f5f7; 
-            --card: #ffffff; 
-            --border: #e0e0e0; 
-            --text: #1d1d1f; 
-            --muted: #86868b; 
-            --accent: #007aff;
-            --top-banner: linear-gradient(to bottom, rgba(255,255,255,0.7), #f5f5f7);
-        }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; transition: background 0.3s, color 0.3s; }
+        :root { --bg: #050505; --card: rgba(20,20,20,0.8); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; --accent: #9d00ff; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-        
-        /* Космический фон со звездами */
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-
-        /* Прелоадер (Белая ракета) */
-        #preloader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
-        .rocket-img-container { width: 150px; height: 250px; position: relative; animation: shake 0.1s infinite; }
-        /* Если картинки нет - покажет заглушку */
-        .rocket-img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%); }
         
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -1px) rotate(0.5deg); } 50% { transform: translate(-1px, 1px) rotate(0deg); } 75% { transform: translate(1px, -1px) rotate(-0.5deg); } 100% { transform: translate(1px, 1px) rotate(0deg); } }
-        
-        .load-text { font-size: 14px; font-weight: 800; color: #000; letter-spacing: 3px; text-transform: uppercase; margin-top: 40px; }
+        #preloader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s; }
+        .orbit-loader { width: 80px; height: 80px; border: 2px solid transparent; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        #app { opacity: 0; transition: opacity 0.5s; display: flex; flex-direction: column; }
-
-        /* Верхний баннер (Космос) */
-        .top-banner {
-            width: 100%; height: 180px;
-            background-image: url('img/banner.jpg'); /* <-- СЮДА ЗАКИНЬ ФОТО КОСМОСА И НАЗОВИ banner.jpg */
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            display: flex; justify-content: center; align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-        /* Затемнение для читаемости текста */
-        .top-banner::before {
-            content: ''; position: absolute; inset: 0; background: var(--top-banner); z-index: 1;
-        }
-        .banner-text {
-            font-size: 32px; font-weight: 900; letter-spacing: 8px; z-index: 2;
-            color: #fff; text-shadow: 0 0 20px var(--accent);
-        }
-
-        /* Хедер */
-        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; background: rgba(5,5,5,0.7); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); }
-        body.light-theme .header { background: rgba(245,245,247,0.7); }
-        
-        .profile-btn { display: flex; align-items: center; gap: 10px; background: var(--card); padding: 6px 15px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; }
-        .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; color: #fff; }
-        .balances { display: flex; gap: 8px; align-items: center; }
+        #app { opacity: 0; transition: opacity 0.5s; }
+        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50;}
+        .balances { display: flex; gap: 10px; align-items: center; }
         .bal { display: flex; align-items: center; gap: 5px; font-weight: 800; font-size: 14px; background: var(--card); padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); }
+        .topup-btn { background: var(--accent); color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-weight: 800; cursor: pointer; }
+
+        .content { padding: 20px; max-width: 500px; margin: 0 auto; }
+        .grid { display: flex; flex-direction: column; gap: 12px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; display: flex; align-items: center; cursor: pointer; }
         
-        .settings { display: flex; gap: 10px; }
-        .icon-btn { width: 36px; height: 36px; background: var(--card); border: 1px solid var(--border); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px; }
-        .icon-btn:active { transform: scale(0.9); }
-
-        /* Кейсы */
-        .content { padding: 10px 20px; max-width: 500px; margin: 0 auto; width: 100%; z-index: 10;}
-        .grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 100px; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .box { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; }
         
-        .card { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            border-radius: 20px; 
-            padding: 15px; 
-            display: flex; 
-            align-items: center; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            backdrop-filter: blur(10px);
-        }
-        .card:active { transform: scale(0.97); }
-
-        .c-img { width: 60px; height: 60px; margin-right: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
-        .c-img img { width: 100%; height: 100%; object-fit: cover; }
-        .c-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-        .c-name { font-size: 16px; font-weight: 800; }
-        .c-desc { font-size: 12px; color: var(--muted); }
-        .c-p-stars { font-size: 14px; font-weight: 800; background: var(--accent); color: #fff; padding: 4px 10px; border-radius: 8px; }
-
-        /* Навигация */
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 30px; display: flex; gap: 10px; background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 50; max-width: 500px; left: 50%; transform: translateX(-50%); }
-        .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; text-align: center; font-size: 14px; font-weight: 800; color: var(--text); cursor: pointer; backdrop-filter: blur(10px); }
-        .nav-btn:active { transform: scale(0.95); }
-
-        /* Модалки */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
-        .modal.show { display: flex; opacity: 1; }
-        
-        .pay-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 30px 20px; width: 90%; max-width: 350px; text-align: center; }
-        .pay-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
-        .pay-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 25px; }
-        .pay-options { display: flex; flex-direction: column; gap: 10px; }
-        .pay-btn { background: var(--accent); border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; cursor: pointer; }
-
-        /* Рулетка */
-        .roulette-box { width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .r-track { width: 100%; height: 130px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; position: relative; display: flex; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .r-items { display: flex; gap: 10px; position: absolute; left: 0; padding: 0 15px; transition: transform 0.1s linear; }
-        .r-item { width: 100px; height: 100px; background: rgba(255,255,255,0.03); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-        .r-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
-        .r-item span { font-size: 12px; font-weight: 800; color: var(--text); }
-        .r-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: var(--accent); z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px var(--accent); }
-
-        /* Результат (с салютом) */
-        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 400px; position: relative; z-index: 10; }
-        .result-img { width: 60vw; max-width: 250px; height: auto; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 40px var(--accent)); animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .result-name { font-size: 28px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; text-shadow: 0 0 10px var(--accent); }
-        .result-btn { background: var(--text); color: var(--bg); border: none; border-radius: 16px; padding: 18px; width: 100%; font-size: 16px; font-weight: 900; margin-top: 30px; cursor: pointer; }
-        
-        /* Салют */
-        #fireworks { position: fixed; inset: 0; z-index: 105; pointer-events: none; display: none; }
-
-        /* Инвентарь */
-        #invList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 100px; }
-        .inv-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; text-align: center; backdrop-filter: blur(10px); }
-        .inv-card img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px; }
-        .inv-name { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
-        .inv-price { font-size: 12px; color: var(--muted); font-weight: 600; }
-
-        /* Формы */
-        .topup-input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; color: var(--text); font-size: 24px; text-align: center; margin-bottom: 15px; font-weight: 800; outline: none; }
+        /* Поле ввода только для цифр */
+        .num-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: #fff; font-size: 24px; text-align: center; margin-bottom: 15px; font-weight: 800; outline: none; }
+        .pay-btn { background: var(--accent); border: none; border-radius: 12px; padding: 18px; font-size: 16px; font-weight: 800; color: #fff; width: 100%; cursor: pointer; margin-bottom: 10px;}
     </style>
 </head>
 <body>
-    <!-- Прелоадер с Ракетой -->
-    <div id="preloader">
-        <div class="rocket-img-container">
-            <!-- Сюда загрузится твоя ракета -->
-            <img src="img/rocket.jpg" class="rocket-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ccc\'/><text x=\'50\' y=\'55\' font-size=\'12\' text-anchor=\'middle\' fill=\'%23000\'>ROCKET</text></svg>'">
-        </div>
-        <div class="load-text">ЗАПУСК...</div>
-    </div>
-
+    <div id="preloader"><div class="orbit-loader"></div></div>
+    
     <div id="app">
         <canvas id="stars-canvas"></canvas>
-        <canvas id="fireworks"></canvas>
-
-        <!-- Верхний баннер -->
-        <div class="top-banner">
-            <div class="banner-text">COSMIC</div>
-        </div>
-
-        <!-- Хедер -->
         <div class="header">
-            <div class="profile-btn" onclick="alert('Твой профиль: ' + (tg?.initDataUnsafe?.user?.first_name || 'Гость'))">
-                <div class="avatar" id="avatarLetter">A</div>
-                <span style="font-weight: 800; font-size: 14px;" id="userName">Профиль</span>
-            </div>
-            
+            <div style="font-weight:900; font-size:18px;">COSMIC</div>
             <div class="balances">
                 <div class="bal">⭐ <span id="balStars">0</span></div>
-            </div>
-
-            <div class="settings">
-                <div class="icon-btn" onclick="toggleTheme()">🌓</div>
-                <div class="icon-btn" onclick="handleTonClick()">💎</div>
+                <button class="topup-btn" onclick="openTopup()">ПОПОЛНИТЬ</button>
             </div>
         </div>
 
-        <div class="content" id="mainContent">
+        <div class="content">
             <div class="grid" id="casesGrid"></div>
         </div>
-
-        <div class="content" id="invContent" style="display:none;">
-            <div class="grid" id="invList"></div>
-        </div>
-
-        <div class="nav">
-            <button class="nav-btn" onclick="switchTab('cases')">КЕЙСЫ</button>
-            <button class="nav-btn" onclick="switchTab('inv')">ИНВЕНТАРЬ</button>
-            <button class="nav-btn" onclick="openTopup()">ПОПОЛНИТЬ</button>
-        </div>
     </div>
 
-    <!-- Модалка оплаты -->
-    <div class="modal" id="modal">
-        <div class="pay-box" id="payStep">
-            <div class="pay-title" id="modalTitle">ПОДТВЕРЖДЕНИЕ</div>
-            <div class="pay-subtitle" id="modalSubtitle">Списать средства?</div>
-            <div class="pay-options" id="payOptions"></div>
-            <button style="margin-top:20px; background:none; border:none; color:var(--muted); font-size:14px; font-weight: 600;" onclick="closeModal()">ОТМЕНА</button>
-        </div>
-        <div class="roulette-box" id="spinStep" style="display:none;">
-            <div class="r-track"><div class="r-marker"></div><div class="r-items" id="rItems"></div></div>
-        </div>
-        <div class="result-box" id="resultStep" style="display:none;">
-            <img src="" class="result-img" id="resImg">
-            <div class="result-name" id="resName">Название</div>
-            <div style="color:var(--muted); font-size:14px; font-weight: 600;" id="resPrice">0</div>
-            <button class="result-btn" onclick="closeModal()">ЗАБРАТЬ</button>
-        </div>
-    </div>
-
-    <!-- Модалка пополнения -->
+    <!-- Окно пополнения -->
     <div class="modal" id="topupModal">
-        <div class="pay-box">
-            <div class="pay-title">ПОПОЛНЕНИЕ</div>
-            <div class="pay-subtitle" style="margin-bottom:15px;">Введите сумму</div>
-            <input type="number" class="topup-input" id="topupAmount" placeholder="1000">
-            <button class="pay-btn" style="justify-content: center;" onclick="confirmTopup()">ПОДТВЕРДИТЬ</button>
-            <button style="margin-top:15px; background:none; border:none; color:var(--muted); font-size:14px; font-weight: 600;" onclick="document.getElementById('topupModal').classList.remove('show')">ОТМЕНА</button>
+        <div class="box">
+            <h3 style="margin-bottom:10px;">ПОПОЛНЕНИЕ</h3>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Введите сумму в звездах</p>
+            <input type="number" class="num-input" id="topupAmount" placeholder="1000" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <button class="pay-btn" onclick="startTonPayment()">ОПЛАТИТЬ TON</button>
+            <button style="background:none; border:none; color:#888; margin-top:10px;" onclick="document.getElementById('topupModal').classList.remove('show')">ОТМЕНА</button>
+            <div id="payStatus" style="margin-top:15px; color:gold; font-size:12px;"></div>
         </div>
     </div>
 
 <script>
-    // ============ НАСТРОЙКИ ============
+    // НАСТРОЙКИ
     const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
-    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
-    
-    // Твои картинки
-    const imgPath = "img/"; 
-    const imgs = {
-        p1: imgPath + "IMG_6767.jpeg", p2: imgPath + "IMG_6766.jpeg", p3: imgPath + "IMG_6765.jpeg",
-        p4: imgPath + "IMG_6763.jpeg", p5: imgPath + "IMG_6764.jpeg", p6: imgPath + "IMG_6761.jpeg",
-        p7: imgPath + "IMG_6760.jpeg", p8: imgPath + "IMG_6758.jpeg", p9: imgPath + "IMG_6757.jpeg",
-        p10: imgPath + "IMG_6756.jpeg", p11: imgPath + "IMG_6755.jpeg",
-        // Твои новые картинки (которые ты загрузил)
-        n1: imgPath + "IMG_6781.jpeg", n2: imgPath + "IMG_6782.jpeg", 
-        n3: imgPath + "IMG_6783.jpeg", n4: imgPath + "IMG_6784.jpeg"
-    };
-
-    const cases = [
-        { id: 1, name: "ЛУННЫЙ СВЕТ", desc: "Базовый кейс", price: 15, max: 25, img: imgs.n1 },
-        { id: 2, name: "ПОЯС АСТЕРОИДОВ", desc: "Средний дроп", price: 50, max: 80, img: imgs.n2 },
-        { id: 3, name: "ТУМАННОСТЬ", desc: "Редкие NFT", price: 150, max: 250, img: imgs.n3 },
-        { id: 4, name: "СВЕРХНОВАЯ", desc: "Эпик дроп", price: 300, max: 400, img: imgs.n4 },
-        { id: 5, name: "ЧЕРНАЯ ДЫРА", desc: "Легендарный", price: 500, max: 1000, img: imgs.n1 }
-    ];
-
-    const nftPool = [
-        { name: "HEART", val: 10, icon: imgs.p6 }, { name: "BEAR", val: 15, icon: imgs.p7 },
-        { name: "CAKE", val: 20, icon: imgs.p8 }, { name: "STAR", val: 25, icon: imgs.p9 },
-        { name: "GIFT", val: 40, icon: imgs.p10 }, { name: "RING", val: 60, icon: imgs.p11 },
-        { name: "PLANET", val: 80, icon: imgs.p1 }, { name: "PEPE", val: 120, icon: imgs.p2 },
-        { name: "DUROV", val: 180, icon: imgs.p3 }, { name: "HORIZON", val: 250, icon: imgs.p4 }
-    ];
+    const TON_RATE = 100; // 100 звезд = 1 TON
 
     let userStars = 0;
-    let inventory = [];
     let telegramId = null;
-    let currentCase = null;
-    let isSpinning = false;
     let tonConnectUI = null;
-    let isLightTheme = false;
-
     const tg = window.Telegram?.WebApp;
-    if(tg) { 
-        tg.expand(); 
-        tg.setHeaderColor('#050505'); 
-        tg.setBackgroundColor('#050505');
-        if(tg.initDataUnsafe?.user) {
-            document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name || 'Профиль';
-            document.getElementById('avatarLetter').textContent = (tg.initDataUnsafe.user.first_name || 'A')[0].toUpperCase();
-        }
-    }
 
-    setTimeout(() => { 
-        document.getElementById('preloader').style.opacity = '0'; 
-        document.getElementById('app').style.opacity = '1'; 
-        setTimeout(() => document.getElementById('preloader').style.display = 'none', 400); 
-    }, 2500);
+    if(tg) { tg.expand(); }
 
-    function toggleTheme() {
-        isLightTheme = !isLightTheme;
-        if(isLightTheme) {
-            document.body.classList.add('light-theme');
-            if(tg) tg.setHeaderColor('#f5f5f7');
-        } else {
-            document.body.classList.remove('light-theme');
-            if(tg) tg.setHeaderColor('#050505');
-        }
-    }
+    // Инициализация TON
+    tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: location.origin + '/tonconnect-manifest.json',
+        uiPreferences: { theme: 'DARK' }
+    });
 
-    function initTon() {
-        try {
-            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                manifestUrl: location.origin + '/tonconnect-manifest.json',
-                uiPreferences: { theme: 'DARK' }
-            });
-        } catch(e) {}
-    }
-    function handleTonClick() {
-        if(!tonConnectUI) initTon();
-        if(tonConnectUI) tonConnectUI.openModal();
-    }
+    setTimeout(() => {
+        document.getElementById('preloader').style.opacity = '0';
+        document.getElementById('app').style.opacity = '1';
+        setTimeout(() => document.getElementById('preloader').style.display = 'none', 400);
+    }, 1500);
 
-    // Звезды + Космонавты
-    function drawStars() {
-        const canvas = document.getElementById('stars-canvas');
-        const ctx = canvas.getContext('2d');
-        let w = canvas.width = window.innerWidth;
-        let h = canvas.height = window.innerHeight;
-        const stars = Array.from({length: 150}).map(() => ({ 
-            x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.5 + 0.5, 
-            v: Math.random() * 0.3 + 0.1, c: Math.random() * 3 
-        }));
-        
-        // Плавающие космонавты (просто точки с орбитами для имитации)
-        const astronauts = Array.from({length: 3}).map(() => ({
-            x: Math.random() * w, y: Math.random() * h, r: Math.random() * 20 + 10, 
-            angle: Math.random() * Math.PI * 2, speed: Math.random() * 0.01
-        }));
-
-        function render() {
-            ctx.clearRect(0, 0, w, h);
-            
-            // Рисуем космонавтов (светящиеся круги)
-            astronauts.forEach(ast => {
-                ast.angle += ast.speed;
-                const ax = ast.x + Math.cos(ast.angle) * ast.r;
-                const ay = ast.y + Math.sin(ast.angle) * ast.r;
-                
-                ctx.beginPath();
-                ctx.arc(ax, ay, 4, 0, Math.PI*2);
-                ctx.fillStyle = 'rgba(200,200,255,0.2)';
-                ctx.fill();
-                // "Шлем" космонавта
-                ctx.beginPath();
-                ctx.arc(ax, ay, 8, 0, Math.PI*2);
-                ctx.strokeStyle = 'rgba(200,200,255,0.1)';
-                ctx.stroke();
-            });
-
-            stars.forEach(st => {
-                st.y += st.v;
-                if(st.y > h) { st.y = 0; st.x = Math.random() * w; }
-                
-                // Неоновые цвета
-                if(isLightTheme) {
-                    ctx.fillStyle = st.c > 2 ? '#ff00ff' : (st.c > 1 ? '#0000ff' : '#ff8800');
-                    ctx.globalAlpha = 0.2;
-                } else {
-                    ctx.fillStyle = st.c > 2 ? '#ff00ff' : (st.c > 1 ? '#00ffff' : '#ffffff');
-                    ctx.globalAlpha = Math.random() * 0.5 + 0.3;
-                }
-                
-                // Свечение звезды
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = ctx.fillStyle;
-                ctx.beginPath(); ctx.arc(st.x, st.y, st.s, 0, Math.PI*2); ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-            requestAnimationFrame(render);
-        }
-        render();
-    }
-
-    async function loadData() {
-        if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
+    // Загрузка данных
+    async function loadUser() {
+        if (!tg || !tg.initDataUnsafe?.user) return;
         telegramId = tg.initDataUnsafe.user.id;
-        try {
-            const { data, error } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
-            if (error && error.code === 'PGRST116') {
-                const { data: newData } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 0, inventory: [] }]).select().single();
-                if (newData) { userStars = newData.stars; inventory = newData.inventory || []; }
-            } else if (data) { userStars = data.stars; inventory = data.inventory || []; }
-        } catch(e) {}
-    }
-
-    async function saveData() {
-        if (!telegramId) return;
-        try { await supabase.from('players').update({ stars: userStars, inventory: inventory }).eq('telegram_id', telegramId); } catch(e) {}
-    }
-
-    function init() {
-        renderCases();
-        drawStars();
-        initTon();
-        loadData().then(() => { updateUI(); renderInv(); });
-    }
-
-    function renderCases() {
-        const g = document.getElementById('casesGrid');
-        g.innerHTML = '';
-        cases.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.onclick = () => openCase(c);
-            div.innerHTML = `
-                <div class="c-img"><img src="${c.img}"></div>
-                <div class="c-info"><div class="c-name">${c.name}</div><div class="c-desc">${c.desc}</div></div>
-                <div class="c-p-stars">${c.price} ⭐</div>
-            `;
-            g.appendChild(div);
-        });
-    }
-
-    function updateUI() { document.getElementById('balStars').textContent = userStars; }
-    function switchTab(tab) {
-        document.getElementById('mainContent').style.display = tab === 'cases' ? 'block' : 'none';
-        document.getElementById('invContent').style.display = tab === 'inv' ? 'block' : 'none';
-    }
-
-    function openTopup() { document.getElementById('topupModal').classList.add('show'); }
-    async function confirmTopup() {
-        const amount = parseInt(document.getElementById('topupAmount').value);
-        if (amount > 0) {
-            userStars += amount;
-            updateUI(); await saveData();
-            document.getElementById('topupModal').classList.remove('show');
-            document.getElementById('topupAmount').value = '';
+        const { data } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
+        if (data) {
+            userStars = data.stars;
+            document.getElementById('balStars').textContent = userStars;
         }
     }
+    loadUser();
 
-    function openCase(c) {
-        currentCase = c;
-        document.getElementById('modalTitle').textContent = c.name;
-        document.getElementById('modalSubtitle').textContent = `Вы точно хотите потратить ${c.price} звезд?`;
-        document.getElementById('payOptions').innerHTML = `<button class="pay-btn" onclick="payStars()"><span>ПОДТВЕРДИТЬ</span><span>-${c.price} ⭐</span></button>`;
-        document.getElementById('payStep').style.display = 'block';
-        document.getElementById('spinStep').style.display = 'none';
-        document.getElementById('resultStep').style.display = 'none';
-        document.getElementById('fireworks').style.display = 'none';
-        document.getElementById('modal').classList.add('show');
+    // Открытие окна
+    function openTopup() {
+        document.getElementById('topupModal').classList.add('show');
+        document.getElementById('payStatus').textContent = '';
     }
 
-    function closeModal() { if(!isSpinning) document.getElementById('modal').classList.remove('show'); }
+    // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
+    async function startTonPayment() {
+        const amountInput = document.getElementById('topupAmount');
+        const starsToAdd = parseInt(amountInput.value);
+        const statusEl = document.getElementById('payStatus');
 
-    async function payStars() {
-        if(userStars < currentCase.price) return alert("Недостаточно звезд!");
-        userStars -= currentCase.price;
-        updateUI(); await saveData();
-        startRoulette();
-    }
-
-    function startRoulette() {
-        document.getElementById('payStep').style.display = 'none';
-        document.getElementById('spinStep').style.display = 'block';
-        isSpinning = true;
-        const validPool = nftPool.filter(i => i.val <= currentCase.max);
-        const prize = validPool[Math.floor(Math.random() * validPool.length)];
-        const track = document.getElementById('rItems');
-        let itemsHtml = '';
-        for(let i=0; i<20; i++) {
-            let item = validPool[Math.floor(Math.random() * validPool.length)];
-            if(i === 15) item = prize;
-            itemsHtml += `<div class="r-item"><img src="${item.icon}"><span>${item.val}⭐</span></div>`;
-        }
-        track.innerHTML = itemsHtml;
-        track.style.transition = 'none';
-        track.style.transform = 'translateX(0px)';
-        
-        setTimeout(() => {
-            track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
-            const trackWidth = document.querySelector('.r-track').offsetWidth;
-            const moveTo = -(((15 * 110) + 50) - (trackWidth / 2));
-            track.style.transform = `translateX(${moveTo}px)`;
-            setTimeout(() => { showResult(prize); }, 5100);
-        }, 100);
-    }
-
-    async function showResult(prize) {
-        isSpinning = false;
-        document.getElementById('spinStep').style.display = 'none';
-        document.getElementById('resultStep').style.display = 'flex';
-        document.getElementById('resImg').src = prize.icon;
-        document.getElementById('resName').textContent = prize.name;
-        document.getElementById('resPrice').textContent = prize.val + " звезд";
-        
-        startFireworks();
-
-        inventory.push(prize);
-        await saveData();
-        renderInv();
-    }
-
-    function renderInv() {
-        const g = document.getElementById('invList');
-        if(inventory.length === 0) {
-            g.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:var(--muted); padding: 20px; font-size:14px; font-weight:600;">ИНВЕНТАРЬ ПУСТ</div>';
+        // Проверка на дурака
+        if (!starsToAdd || starsToAdd < 50) {
+            statusEl.textContent = "Минимальная сумма: 50 звезд.";
             return;
         }
-        g.innerHTML = '';
-        inventory.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'inv-card';
-            div.innerHTML = `<img src="${item.icon}"><div class="inv-name">${item.name}</div><div class="inv-price">${item.val} ⭐</div>`;
-            g.appendChild(div);
-        });
-    }
 
-    function startFireworks() {
-        const canvas = document.getElementById('fireworks');
-        canvas.style.display = 'block';
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        let particles = [];
-        for(let i=0; i<150; i++) {
-            particles.push({
-                x: canvas.width / 2, y: canvas.height / 2,
-                vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20,
-                life: 1, color: `hsl(${Math.random() * 360}, 100%, 50%)`
-            });
+        if (!tonConnectUI.wallet) {
+            statusEl.textContent = "Подключите кошелек TON...";
+            tonConnectUI.openModal();
+            return;
         }
 
-        function animateFireworks() {
-            ctx.fillStyle = 'rgba(0,0,0,0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const tonAmount = starsToAdd / TON_RATE;
+        const invoiceId = 'PAY_' + Date.now(); // Уникальный код чека
+
+        statusEl.textContent = "Отправка транзакции...";
+
+        try {
+            // 1. Отправляем TON
+            const { beginCell } = TON_CORE;
+            const cell = beginCell().storeUint(0, 32).storeStringTail(invoiceId).endCell();
+            const payload = cell.toBoc().toString('base64');
+
+            await tonConnectUI.sendTransaction({
+                validUntil: Math.floor(Date.now() / 1000) + 300,
+                messages: [{
+                    address: RECEIVER,
+                    amount: String(Math.floor(tonAmount * 1e9)),
+                    payload: payload
+                }]
+            });
+
+            // 2. Ждем подтверждения в блокчейне
+            statusEl.textContent = "Ожидание подтверждения сети (15 сек)...";
+            let attempts = 0;
             
-            particles.forEach(p => {
-                p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.02;
-                if(p.life > 0) {
-                    ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+            const checkInterval = setInterval(async () => {
+                attempts++;
+                // Стучимся к нашему API (в папке api/check-payment.js)
+                const check = await fetch('/api/check-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ invoiceId: invoiceId, expectedTon: tonAmount })
+                });
+                const res = await check.json();
+
+                if (res.paid) {
+                    clearInterval(checkInterval);
+                    statusEl.textContent = "✅ Оплата прошла! Начисляем...";
+                    
+                    // 3. Начисляем звезды в базу
+                    userStars += starsToAdd;
+                    document.getElementById('balStars').textContent = userStars;
+                    await supabase.from('players').update({ stars: userStars }).eq('telegram_id', telegramId);
+                    
+                    statusEl.textContent = `Успешно начислено ${starsToAdd} звезд!`;
+                    setTimeout(() => document.getElementById('topupModal').classList.remove('show'), 2000);
+                } else if (attempts > 12) { // Ждем 1 минуту (12 * 5 сек)
+                    clearInterval(checkInterval);
+                    statusEl.textContent = "Сеть не подтвердила платеж. Попробуйте позже.";
                 }
-            });
+            }, 5000);
 
-            particles = particles.filter(p => p.life > 0);
-            if(particles.length > 0) {
-                requestAnimationFrame(animateFireworks);
-            } else {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                canvas.style.display = 'none';
-            }
+        } catch (e) {
+            console.error(e);
+            statusEl.textContent = "Ошибка: транзакция отклонена.";
         }
-        animateFireworks();
     }
-
-    window.onload = init;
 </script>
 </body>
 </html>
