@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: fragment-worker
+    env: python
+    buildCommand: "pip install --no-deps -r requirements.txt && pip install supabase python-dotenv"
+    startCommand: "python worker.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
