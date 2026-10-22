@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <style>
-        :root { --bg: #000; --card: rgba(15,15,15,0.7); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; }
+        :root { --bg: #000; --card: rgba(15,15,15,0.7); --border: rgba(255,255,255,0.1); --text: #fff; --muted: #888; --ton: #0098EA; }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         #stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
@@ -23,11 +23,19 @@
         .load-bar-fill { width: 0%; height: 100%; background: #fff; transition: width 0.3s; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         #app { opacity: 0; transition: opacity 0.5s; }
-        .header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 18px; font-weight: 800; letter-spacing: 2px; }
-        .balances { display: flex; gap: 10px; }
-        .bal { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 30px; backdrop-filter: blur(10px); }
+        
+        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+        .balances { display: flex; gap: 8px; align-items: center; }
+        
+        .bal { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 30px; backdrop-filter: blur(10px); }
         .bal svg { width: 14px; height: 14px; fill: #fff; }
+        
+        /* Кнопка TON */
+        .connect-btn { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; background: rgba(0,152,234,0.1); border: 1px solid rgba(0,152,234,0.3); color: var(--ton); padding: 6px 12px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
+        .connect-btn:active { background: rgba(0,152,234,0.2); }
+        .connect-btn.connected { color: #fff; border-color: var(--border); background: var(--card); }
+
         .content { padding: 20px; max-width: 600px; margin: 0 auto; }
         .sec-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: 2px; color: var(--muted); }
         .grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 80px; }
@@ -40,7 +48,7 @@
         .c-desc { font-size: 11px; color: var(--muted); }
         .c-prices { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .c-p-stars { font-size: 15px; font-weight: 700; }
-        .c-p-ton { font-size: 11px; color: #0098EA; font-weight: 600; }
+        .c-p-ton { font-size: 11px; color: var(--ton); font-weight: 600; }
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; display: flex; gap: 10px; background: linear-gradient(to top, #000 60%, transparent); z-index: 50; max-width: 600px; left: 50%; transform: translateX(-50%); }
         .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 16px; text-align: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; letter-spacing: 1px; }
         .nav-btn:active { background: rgba(255,255,255,0.1); }
@@ -81,6 +89,10 @@
             <div class="logo">COSMIC VAULT</div>
             <div class="balances">
                 <div class="bal"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span id="balStars">0</span></div>
+                <div class="connect-btn" id="tonBtn" onclick="handleTonClick()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <span id="tonText">TON</span>
+                </div>
             </div>
         </div>
         <div class="content" id="mainContent">
@@ -116,18 +128,12 @@
     // ============ ТВОИ КЛЮЧИ SUPABASE ============
     const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
-    // ===========================================
-
+    
     let supabase = null;
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) {
-        console.error("Ошибка инициализации Supabase:", e);
-    }
+    try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
 
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100; 
-    
     const imgPath = "img/"; 
     const imgs = {
         p1: imgPath + "IMG_6767.jpeg", p2: imgPath + "IMG_6766.jpeg", p3: imgPath + "IMG_6765.jpeg",
@@ -157,63 +163,84 @@
     let telegramId = null;
     let currentCase = null;
     let isSpinning = false;
+    
+    // Переменные для TON
     let tonConnectUI = null;
+    let tonWalletAddress = null;
+    let tonBalance = 0;
 
     const tg = window.Telegram?.WebApp;
     if(tg) { tg.expand(); tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000'); }
 
-    // ============ ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ============
+    // ============ ИНИЦИАЛИЗАЦИЯ TON ============
+    function initTon() {
+        try {
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: location.origin + '/tonconnect-manifest.json',
+                uiPreferences: { theme: 'DARK' }
+            });
+
+            // Слушаем изменение статуса кошелька
+            tonConnectUI.onStatusChange(wallet => {
+                if (wallet) {
+                    tonWalletAddress = wallet.account.address;
+                    const shortAddr = tonWalletAddress.slice(0, 4) + '...' + tonWalletAddress.slice(-4);
+                    document.getElementById('tonText').textContent = shortAddr;
+                    document.getElementById('tonBtn').classList.add('connected');
+                    fetchTonBalance(tonWalletAddress);
+                } else {
+                    tonWalletAddress = null;
+                    document.getElementById('tonText').textContent = 'Подключить TON';
+                    document.getElementById('tonBtn').classList.remove('connected');
+                }
+            });
+        } catch(e) { console.log("TON Init Error:", e); }
+    }
+
+    async function fetchTonBalance(addr) {
+        try {
+            const r = await fetch(`https://tonapi.io/v2/accounts/${addr}`);
+            const d = await r.json();
+            if (d.balance) {
+                tonBalance = (d.balance / 1e9).toFixed(2);
+                document.getElementById('tonText').textContent = `💎 ${tonBalance} TON`;
+            }
+        } catch(e) { console.log("Balance Error:", e); }
+    }
+
+    function handleTonClick() {
+        if (tonConnectUI && tonConnectUI.wallet) {
+            // Если уже подключен, можно показать инфо или отключить (пока просто откроем модалку TonConnect)
+            tonConnectUI.openModal();
+        } else {
+            // Если не подключен — открываем окно подключения
+            if (tonConnectUI) tonConnectUI.openModal();
+        }
+    }
+
+    // ============ SUPABASE ============
     async function loadPlayerData() {
-        if (!supabase) {
-            console.log("Supabase не подключен, используем локальные данные");
-            return;
-        }
-        if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-            console.log("Нет данных Telegram");
-            return;
-        }
+        if (!supabase || !tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return;
         telegramId = tg.initDataUnsafe.user.id;
 
         try {
-            const { data, error } = await supabase
-                .from('players')
-                .select('*')
-                .eq('telegram_id', telegramId)
-                .single();
-
+            const { data, error } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
             if (error && error.code === 'PGRST116') {
-                // Игрока нет — создаем
-                const { data: newData, error: insertError } = await supabase
-                    .from('players')
-                    .insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }])
-                    .select()
-                    .single();
-                
-                if (!insertError && newData) {
-                    userStars = newData.stars;
-                    inventory = newData.inventory || [];
-                }
+                const { data: newData, error: insertError } = await supabase.from('players').insert([{ telegram_id: telegramId, stars: 1000, inventory: [] }]).select().single();
+                if (!insertError && newData) { userStars = newData.stars; inventory = newData.inventory || []; }
             } else if (data) {
                 userStars = data.stars;
                 inventory = data.inventory || [];
             }
-        } catch(e) {
-            console.error("Ошибка загрузки:", e);
-        }
+        } catch(e) {}
     }
 
-    // ============ СОХРАНЕНИЕ В SUPABASE ============
     async function savePlayerData() {
         if (!supabase || !telegramId) return;
-        try {
-            await supabase
-                .from('players')
-                .update({ stars: userStars, inventory: inventory, updated_at: new Date() })
-                .eq('telegram_id', telegramId);
-        } catch(e) { console.error("Ошибка сохранения:", e); }
+        try { await supabase.from('players').update({ stars: userStars, inventory: inventory, updated_at: new Date() }).eq('telegram_id', telegramId); } catch(e) {}
     }
 
-    // ============ ПРЕЛОАДЕР (С ЗАЩИТОЙ ОТ ЗАВИСАНИЯ) ============
+    // ============ ПРЕЛОАДЕР ============
     let loadP = 0;
     const loadInterval = setInterval(async () => {
         loadP += Math.random() * 20;
@@ -222,13 +249,7 @@
         
         if(loadP >= 100) {
             clearInterval(loadInterval);
-            
-            // Запускаем загрузку из базы, но не ждем дольше 3 секунд
-            await Promise.race([
-                loadPlayerData(),
-                new Promise(resolve => setTimeout(resolve, 3000))
-            ]);
-            
+            await Promise.race([ loadPlayerData(), new Promise(r => setTimeout(r, 3000)) ]);
             updateUI();
             renderInv();
             document.getElementById('preloader').style.opacity = '0';
@@ -239,12 +260,7 @@
 
     function init() {
         renderCases();
-        try {
-            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                manifestUrl: location.origin + '/tonconnect-manifest.json',
-                uiPreferences: { theme: 'DARK' }
-            });
-        } catch(e) { console.log(e); }
+        initTon(); // Запускаем TON
         drawStars();
     }
 
@@ -297,7 +313,13 @@
     }
 
     async function payTon() {
-        if(!tonConnectUI) return alert("Ошибка TON");
+        if(!tonConnectUI || !tonConnectUI.wallet) {
+            closeModal();
+            alert("Сначала подключите кошелёк TON (кнопка вверху)!");
+            handleTonClick();
+            return;
+        }
+        
         const amountTon = currentCase.price / TON_RATE;
         try {
             const { beginCell } = TON_CORE;
