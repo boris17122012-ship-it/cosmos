@@ -1,6 +1,4 @@
-// fragment-deliver.js - работает как Vercel Serverless Function
 export default async function handler(req, res) {
-    // Разрешаем CORS для нашего сайта
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -17,21 +15,15 @@ export default async function handler(req, res) {
     }
 
     try {
-        // ВНИМАНИЕ: Здесь мы стучимся к публичному API Fragment
-        // В реальности для автовыдачи нужен полноценный сервер, 
-        // но для теста мы проверим, отвечает ли API.
-        
         const response = await fetch('https://api.fragment.com/api/transferGift', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Сюда вставляем твои cookies от Fragment (зашифрованные в переменной Vercel)
-                'Cookie': process.env.FRAGMENT_COOKIES || '' 
+                'Cookie': process.env.FRAGMENT_COOKIES || ''
             },
             body: JSON.stringify({
                 to_username: username,
-                gift_name: giftName,
-                // Дополнительные параметры зависят от структуры API Fragment
+                gift_name: giftName
             })
         });
 
@@ -41,17 +33,17 @@ export default async function handler(req, res) {
             throw new Error(data.message || 'Ошибка Fragment API');
         }
 
-        return res.status(200).json({ 
-            status: 'success', 
+        return res.status(200).json({
+            status: 'success',
             message: `Подарок ${giftName} отправлен на @${username}`,
             tx: data.transaction_hash || 'pending'
         });
 
     } catch (error) {
         console.error('Ошибка выдачи:', error);
-        return res.status(500).json({ 
-            status: 'error', 
-            message: 'Не удалось отправить подарок. Проверьте настройки.' 
+        return res.status(500).json({
+            status: 'error',
+            message: 'Не удалось отправить подарок. Попробуйте позже.'
         });
     }
 }
