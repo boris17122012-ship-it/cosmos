@@ -27,14 +27,12 @@
             --cta-bg: #ffffff;
             --cta-fg: #111111;
             --nav: rgba(12,12,12,0.92);
-            --gift: #161616;
-            --gift-top: #2a2a2a;
-            --ribbon: #d8d8d8;
             --spark: #ffffff;
             --switch: #1b1b1b;
             --switch-on: #0e0e0e;
             --shadow: 0 18px 40px rgba(0,0,0,0.35);
             --orbit: rgba(255,255,255,0.22);
+            --fx: rgba(255,255,255,0.16);
         }
         html[data-theme="light"] {
             --bg: #f3f3f4;
@@ -46,70 +44,163 @@
             --cta-bg: #111111;
             --cta-fg: #ffffff;
             --nav: rgba(255,255,255,0.94);
-            --gift: #f6f6f6;
-            --gift-top: #ffffff;
-            --ribbon: #161616;
             --spark: #111111;
             --switch: #ececef;
             --switch-on: #111111;
             --shadow: 0 18px 40px rgba(0,0,0,0.08);
             --orbit: rgba(0,0,0,0.12);
+            --fx: rgba(17,17,17,0.1);
+        }
+        html, body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100%;
+            transition: background-color 0.55s ease, color 0.55s ease;
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-        html, body { background: var(--bg); color: var(--text); min-height: 100%; }
         body { overflow-x: hidden; }
+        img { display: block; max-width: 100%; }
+
+        .theme-veil {
+            position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
+            background: radial-gradient(circle at var(--fx-x, 82%) 8%, var(--spark), transparent 42%);
+        }
+        html.theme-fx .theme-veil { animation: veilPulse 0.7s ease; }
+        @keyframes veilPulse {
+            0% { opacity: 0.38; transform: scale(0.86); }
+            100% { opacity: 0; transform: scale(1.18); }
+        }
 
         .spark {
             position: fixed; pointer-events: none; z-index: 0; color: var(--spark); opacity: 0.85;
+            animation: twinkle 2.8s ease-in-out infinite;
+            transition: color 0.55s ease, left 0.55s ease, right 0.55s ease, top 0.55s ease;
         }
         .spark-a { top: 86px; right: 22px; font-size: 18px; }
-        .spark-b { bottom: 210px; right: 18px; font-size: 14px; opacity: 0.5; }
+        .spark-b { bottom: 210px; right: 18px; font-size: 14px; opacity: 0.5; animation-delay: 1.2s; }
         html[data-theme="light"] .spark-a { top: 92px; left: auto; right: 18px; }
         html[data-theme="light"] .spark-b { left: 22px; right: auto; bottom: 240px; }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.25; transform: scale(0.85) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.15) rotate(18deg); }
+        }
 
-        #preloader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.4s; }
+        #preloader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.4s, background-color 0.55s ease; }
         .orbit-loader { width: 54px; height: 54px; border: 2px solid transparent; border-top-color: var(--text); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         #app { opacity: 0; transition: opacity 0.45s; position: relative; z-index: 1; max-width: 430px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 
         .topbar { padding: 14px 20px 4px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .brand { font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; }
-        .brand span { display: block; margin-top: 5px; font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+        .brand { display: flex; align-items: flex-start; gap: 10px; }
+        .brand-mark {
+            width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
+            box-shadow: var(--shadow); animation: markPulse 4.5s ease-in-out infinite;
+        }
+        .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+        .brand-title { font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; }
+        .brand-title span { display: block; margin-top: 5px; font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; transition: color 0.55s ease; }
+        @keyframes markPulse {
+            0%, 100% { transform: rotate(-4deg) scale(1); }
+            50% { transform: rotate(4deg) scale(1.04); }
+        }
 
-        .theme-switch { display: flex; align-items: center; gap: 2px; background: var(--switch); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
-        .theme-btn { width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+        .theme-switch { display: flex; align-items: center; gap: 2px; background: var(--switch); border: 1px solid var(--line); border-radius: 999px; padding: 4px; transition: background-color 0.55s ease, border-color 0.55s ease; }
+        .theme-btn { width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); display: grid; place-items: center; cursor: pointer; transition: background-color 0.35s ease, color 0.35s ease, transform 0.35s ease; }
+        .theme-btn:active { transform: scale(0.9); }
         .theme-btn.active { background: var(--switch-on); color: #fff; }
         html[data-theme="light"] .theme-btn.active { color: #fff; }
         html[data-theme="dark"] .theme-btn.active { background: #111; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
 
         .balances { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 20px 4px; }
-        .bal-card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 12px 12px 12px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: var(--shadow); min-height: 72px; }
-        .bal-ico { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--card-2); border: 1px solid var(--line); flex-shrink: 0; }
+        .bal-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 12px 12px 12px 10px;
+            display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: var(--shadow); min-height: 72px;
+            transition: background-color 0.55s ease, border-color 0.55s ease, box-shadow 0.55s ease, transform 0.28s ease;
+        }
+        .bal-card:active { transform: scale(0.98); }
+        .bal-ico {
+            width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+            background: var(--card-2); border: 1px solid var(--line); flex-shrink: 0; overflow: hidden;
+            transition: background-color 0.55s ease, border-color 0.55s ease;
+        }
+        .bal-ico img { width: 22px; height: 22px; object-fit: contain; }
+        .ton-light { display: none; }
+        html[data-theme="light"] .ton-dark { display: none; }
+        html[data-theme="light"] .ton-light { display: block; }
         .bal-meta { min-width: 0; flex: 1; }
-        .bal-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; white-space: nowrap; }
-        .bal-val { font-size: 14px; font-weight: 800; white-space: nowrap; }
+        .bal-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; white-space: nowrap; transition: color 0.55s ease; }
+        .bal-val { font-size: 14px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+        .bal-val img { width: 13px; height: 13px; object-fit: contain; }
         .chev { opacity: 0.4; font-size: 13px; flex-shrink: 0; }
 
         .hero { padding: 4px 20px 4px; text-align: center; }
-        .gift-wrap { position: relative; height: 168px; display: grid; place-items: center; margin: 0 0 2px; }
-        .orbit { position: absolute; width: 230px; height: 92px; border: 1.5px solid var(--orbit); border-radius: 50%; transform: rotate(-18deg); top: 78px; }
-        .orbit:nth-child(2) { width: 210px; height: 78px; transform: rotate(16deg); top: 92px; opacity: 0.7; }
-        .gift { position: relative; width: 118px; height: 118px; filter: drop-shadow(0 18px 18px rgba(0,0,0,0.28)); }
-        .gift-box { position: absolute; left: 14px; top: 38px; width: 90px; height: 72px; background: linear-gradient(180deg, var(--gift-top), var(--gift)); border-radius: 8px 8px 10px 10px; box-shadow: inset 0 0 0 1px var(--line); }
-        .gift-lid { position: absolute; left: 8px; top: 22px; width: 102px; height: 28px; background: var(--gift-top); border-radius: 8px; box-shadow: 0 6px 0 rgba(0,0,0,0.12), inset 0 0 0 1px var(--line); }
-        .rib-v { position: absolute; left: 54px; top: 22px; width: 10px; height: 88px; background: var(--ribbon); border-radius: 2px; }
-        .rib-h { position: absolute; left: 8px; top: 32px; width: 102px; height: 10px; background: var(--ribbon); }
-        .bow { position: absolute; left: 36px; top: 2px; width: 46px; height: 28px; }
-        .bow i { position: absolute; top: 6px; width: 24px; height: 18px; background: var(--ribbon); border-radius: 50% 50% 40% 40%; }
-        .bow i:first-child { left: 0; transform: rotate(-28deg); }
-        .bow i:last-child { right: 0; transform: rotate(28deg); }
-        .plane { position: absolute; left: 50%; top: 64px; transform: translateX(-50%); width: 34px; height: 34px; border-radius: 50%; background: #111; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
-        html[data-theme="light"] .plane { background: #111; }
+        .gift-wrap { position: relative; height: 210px; display: grid; place-items: center; margin: 0 0 2px; }
+        .orbit {
+            position: absolute; width: 250px; height: 98px; border: 1.5px solid var(--orbit); border-radius: 50%;
+            top: 86px; animation: orbitSpin 12s linear infinite; transition: border-color 0.55s ease;
+        }
+        .orbit:nth-child(2) { width: 220px; height: 82px; top: 98px; opacity: 0.7; animation-duration: 16s; animation-direction: reverse; }
+        @keyframes orbitSpin {
+            0% { transform: rotate(-18deg); }
+            100% { transform: rotate(342deg); }
+        }
+        .hero-case {
+            position: relative; z-index: 2; width: 210px; height: 186px; object-fit: contain;
+            filter: drop-shadow(0 18px 18px rgba(0,0,0,0.28));
+            animation: floatCase 4.2s ease-in-out infinite;
+            mix-blend-mode: multiply;
+            transition: opacity 0.45s ease, transform 0.45s ease, filter 0.55s ease;
+        }
+        @keyframes floatCase {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .hero-case.swap { animation: caseSwap 0.7s ease; }
+        @keyframes caseSwap {
+            0% { opacity: 0; transform: scale(0.86) rotate(-8deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
 
+        .daily-badge {
+            display: inline-flex; align-items: center; gap: 6px; margin: 2px auto 8px;
+            padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+            background: var(--card); border: 1px solid var(--line); color: var(--text);
+            box-shadow: var(--shadow); animation: badgeGlow 2.4s ease-in-out infinite;
+            transition: background-color 0.55s ease, border-color 0.55s ease, color 0.55s ease;
+        }
+        .daily-badge i { width: 6px; height: 6px; border-radius: 50%; background: #39d98a; display: block; animation: liveDot 1.4s ease-in-out infinite; }
+        @keyframes liveDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+        @keyframes badgeGlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
         .hero h2 { font-size: 30px; letter-spacing: -0.8px; margin-top: 0; }
-        .hero p { color: var(--muted); font-size: 13px; line-height: 1.35; margin: 6px auto 14px; max-width: 240px; }
-        .open-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px; background: var(--cta-bg); color: var(--cta-fg); border: 0; border-radius: 999px; padding: 13px 22px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow); }
+        .hero p { color: var(--muted); font-size: 13px; line-height: 1.35; margin: 6px auto 14px; max-width: 240px; transition: color 0.55s ease; }
+        .open-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px;
+            background: var(--cta-bg); color: var(--cta-fg); border: 0; border-radius: 999px; padding: 13px 22px;
+            font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+            transition: background-color 0.55s ease, color 0.55s ease, transform 0.28s ease, box-shadow 0.55s ease;
+        }
+        .open-btn:active { transform: scale(0.97); }
+
+        .countdown {
+            margin: 16px auto 6px; max-width: 260px; padding: 12px 14px; border-radius: 18px;
+            background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
+            transition: background-color 0.55s ease, border-color 0.55s ease;
+        }
+        .countdown-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+        .timer {
+            font-size: 22px; font-weight: 800; letter-spacing: 1.5px; font-variant-numeric: tabular-nums;
+        }
+        .timer-bar {
+            margin-top: 8px; height: 4px; border-radius: 99px; background: var(--line); overflow: hidden;
+        }
+        .timer-bar i {
+            display: block; height: 100%; width: 100%; transform-origin: left center;
+            background: var(--text); border-radius: 99px; transition: background-color 0.55s ease;
+        }
 
         .section { padding: 16px 20px 24px; }
         .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
@@ -117,24 +208,66 @@
         .all-link { background: none; border: 0; color: var(--muted); font-size: 13px; cursor: pointer; }
 
         .cases { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .case-card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px 14px 14px; text-align: center; cursor: pointer; box-shadow: var(--shadow); }
-        .mini-gift { height: 70px; position: relative; margin-bottom: 4px; overflow: hidden; }
-        .mini-gift .gift { transform: scale(0.62); transform-origin: center top; left: 50%; margin-left: -59px; }
+        .case-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px 14px 14px;
+            text-align: center; cursor: pointer; box-shadow: var(--shadow);
+            transition: background-color 0.55s ease, border-color 0.55s ease, transform 0.28s ease, box-shadow 0.55s ease;
+            animation: cardIn 0.55s ease both;
+        }
+        .case-card:nth-child(2) { animation-delay: 0.08s; }
+        .case-card:nth-child(3) { animation-delay: 0.16s; }
+        .case-card:nth-child(4) { animation-delay: 0.24s; }
+        .case-card:active { transform: scale(0.97); }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+        .case-art-wrap { height: 92px; display: grid; place-items: center; margin-bottom: 6px; }
+        .case-art { width: 108px; height: 92px; object-fit: contain; animation: floatCase 4.8s ease-in-out infinite; mix-blend-mode: multiply; }
+        .case-card:nth-child(2) .case-art { animation-delay: 0.6s; }
         .case-card h4 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
-        .case-card .price { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
-        .case-open { background: none; border: 0; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
+        .case-card .price { color: var(--muted); font-size: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 4px; transition: color 0.55s ease; }
+        .case-card .price img { width: 12px; height: 12px; object-fit: contain; }
+        .case-open { background: none; border: 0; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.55s ease; }
 
         .screen { display: none; }
-        .screen.active { display: block; }
-        .empty { padding: 80px 30px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.45; }
+        .screen.active { display: block; animation: screenIn 0.42s ease; }
+        @keyframes screenIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: none; }
+        }
+        .empty { padding: 48px 24px 24px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.45; }
+        .gift-mosaic { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 20px 20px; }
+        .gift-mosaic img {
+            width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px;
+            border: 1px solid var(--line); animation: cardIn 0.6s ease both;
+        }
+        .gift-mosaic img:nth-child(2) { animation-delay: 0.08s; }
+        .gift-mosaic img:nth-child(3) { animation-delay: 0.16s; }
+        .gift-mosaic img:nth-child(4) { animation-delay: 0.24s; }
+        .gift-mosaic img:nth-child(5) { animation-delay: 0.32s; }
+        .gift-mosaic img:nth-child(6) { animation-delay: 0.4s; }
 
-        .tabbar { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--nav); border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); z-index: 40; backdrop-filter: blur(16px); }
-        .tab { background: none; border: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 6px 0; }
-        .tab.active { color: var(--text); }
+        .tabbar {
+            position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 430px;
+            background: var(--nav); border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1fr;
+            padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); z-index: 40; backdrop-filter: blur(16px);
+            transition: background-color 0.55s ease, border-color 0.55s ease;
+        }
+        .tab {
+            background: none; border: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center;
+            gap: 4px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 6px 0;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .tab img { width: 22px; height: 22px; object-fit: contain; opacity: 0.45; transition: opacity 0.3s ease, transform 0.3s ease, filter 0.55s ease; mix-blend-mode: multiply; }
+        #tab-collection img, #tab-profile img { mix-blend-mode: normal; }
+        .tab.active { color: var(--text); transform: translateY(-1px); }
+        .tab.active img { opacity: 1; transform: scale(1.08); }
+        #tab-collection img, #tab-profile img { border-radius: 6px; }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 100; display: none; align-items: center; justify-content: center; }
-        .modal.show { display: flex; }
-        .box { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 26px 20px; width: 90%; max-width: 350px; text-align: center; color: var(--text); }
+        .modal.show { display: flex; animation: screenIn 0.28s ease; }
+        .box { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 26px 20px; width: 90%; max-width: 350px; text-align: center; color: var(--text); transition: background-color 0.55s ease, border-color 0.55s ease, color 0.55s ease; }
         .box h3 { margin-bottom: 8px; }
         .box p { color: var(--muted); font-size: 12px; margin-bottom: 15px; }
         .num-input { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-size: 24px; text-align: center; margin-bottom: 15px; font-weight: 800; outline: none; }
@@ -143,13 +276,17 @@
     </style>
 </head>
 <body>
+    <div class="theme-veil"></div>
     <div id="preloader"><div class="orbit-loader"></div></div>
     <div class="spark spark-a">✦</div>
     <div class="spark spark-b">✦</div>
 
     <div id="app">
         <div class="topbar">
-            <div class="brand">cosmos<span>подарки в Telegram</span></div>
+            <div class="brand">
+                <div class="brand-mark"><img src="img/cosmos_app_icon.png" alt=""></div>
+                <div class="brand-title">cosmos<span>подарки в Telegram</span></div>
+            </div>
             <div class="theme-switch" role="group" aria-label="Тема">
                 <button class="theme-btn" id="themeDark" type="button" onclick="setTheme('dark')" aria-label="Тёмная">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 14.3A9 9 0 1 1 9.7 3 7 7 0 0 0 21 14.3z"/></svg>
@@ -163,22 +300,21 @@
         <div id="screen-cases" class="screen active">
             <div class="balances">
                 <div class="bal-card" role="button" onclick="openTopup()">
-                    <div class="bal-ico">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.2L12 16.8 5.7 20.8 8 13.6 2 9.2h7.6z"/></svg>
-                    </div>
+                    <div class="bal-ico"><img src="img/telegram_stars_icon.png" alt=""></div>
                     <div class="bal-meta">
-                        <div class="bal-label">Ваш баланс</div>
-                        <div class="bal-val"><span id="balStars">0.00</span> TON</div>
+                        <div class="bal-label">Звёзды</div>
+                        <div class="bal-val"><span id="balStars">0</span></div>
                     </div>
                     <span class="chev">→</span>
                 </div>
                 <div class="bal-card" role="button" onclick="openTopup()">
                     <div class="bal-ico">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 6.5-3 13.5H7L4 8.5 12 2zm0 4.2L7.8 9.6 9.4 17h5.2l1.6-7.4L12 6.2z"/></svg>
+                        <img class="ton-dark" src="img/ton_white.png" alt="">
+                        <img class="ton-light" src="img/ton_black.png" alt="">
                     </div>
                     <div class="bal-meta">
-                        <div class="bal-label">Ваш баланс</div>
-                        <div class="bal-val"><span id="balTon">0.00</span> TON</div>
+                        <div class="bal-label">TON</div>
+                        <div class="bal-val"><span id="balTon">0.00</span></div>
                     </div>
                     <span class="chev">→</span>
                 </div>
@@ -188,20 +324,17 @@
                 <div class="gift-wrap">
                     <div class="orbit"></div>
                     <div class="orbit"></div>
-                    <div class="gift" id="heroGift">
-                        <div class="gift-box"></div>
-                        <div class="gift-lid"></div>
-                        <div class="rib-v"></div>
-                        <div class="rib-h"></div>
-                        <div class="bow"><i></i><i></i></div>
-                        <div class="plane">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M21.5 3.5L2.8 10.7c-.9.3-.8 1.6.1 1.8l4.7 1.1 1.8 5.6c.3.9 1.5 1 1.9.2l2.6-4.7 5.1 3.7c.8.6 1.9 0 2-1L22.7 4.4c.2-1-.9-1.7-1.8-.9z"/></svg>
-                        </div>
-                    </div>
+                    <img class="hero-case" id="dailyCaseImg" src="img/cosmos_elite.png" alt="">
                 </div>
-                <h2>Кейсы</h2>
-                <p>Открой кейс и получи редкий подарок в Telegram</p>
-                <button class="open-btn" type="button" onclick="document.getElementById('casesSection').scrollIntoView({behavior:'smooth'})">Открыть кейс →</button>
+                <div class="daily-badge"><i></i> Кейс дня</div>
+                <h2 id="dailyCaseName">Пульсар</h2>
+                <p>Каждый день новый кейс. Следующая смена в 00:00</p>
+                <button class="open-btn" type="button" onclick="alert('Кейсы в разработке')">Открыть кейс →</button>
+                <div class="countdown">
+                    <div class="countdown-label">До смены осталось</div>
+                    <div class="timer" id="dailyTimer">00:00:00</div>
+                    <div class="timer-bar"><i id="dailyBar"></i></div>
+                </div>
             </div>
 
             <div class="section" id="casesSection">
@@ -211,15 +344,43 @@
                 </div>
                 <div class="cases" id="casesGrid">
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="mini-gift"><div class="gift"><div class="gift-box"></div><div class="gift-lid"></div><div class="rib-v"></div><div class="rib-h"></div><div class="bow"><i></i><i></i></div></div></div>
-                        <h4>Обычный кейс</h4>
-                        <div class="price">От 0.1 TON</div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_standard.png" alt=""></div>
+                        <h4>Орбита</h4>
+                        <div class="price">
+                            <img class="ton-dark" src="img/ton_white.png" alt="">
+                            <img class="ton-light" src="img/ton_black.png" alt="">
+                            0.15
+                        </div>
                         <button class="case-open" type="button">Открыть →</button>
                     </div>
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="mini-gift"><div class="gift"><div class="gift-box"></div><div class="gift-lid"></div><div class="rib-v"></div><div class="rib-h"></div><div class="bow"><i></i><i></i></div></div></div>
-                        <h4>Премиум кейс</h4>
-                        <div class="price">От 0.5 TON</div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_premium.png" alt=""></div>
+                        <h4>Небула</h4>
+                        <div class="price">
+                            <img class="ton-dark" src="img/ton_white.png" alt="">
+                            <img class="ton-light" src="img/ton_black.png" alt="">
+                            0.45
+                        </div>
+                        <button class="case-open" type="button">Открыть →</button>
+                    </div>
+                    <div class="case-card" onclick="alert('Кейсы в разработке')">
+                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_elite.png" alt=""></div>
+                        <h4>Апекс</h4>
+                        <div class="price">
+                            <img class="ton-dark" src="img/ton_white.png" alt="">
+                            <img class="ton-light" src="img/ton_black.png" alt="">
+                            0.80
+                        </div>
+                        <button class="case-open" type="button">Открыть →</button>
+                    </div>
+                    <div class="case-card" onclick="alert('Кейсы в разработке')">
+                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_gift.png" alt=""></div>
+                        <h4>Сириус</h4>
+                        <div class="price">
+                            <img class="ton-dark" src="img/ton_white.png" alt="">
+                            <img class="ton-light" src="img/ton_black.png" alt="">
+                            0.30
+                        </div>
                         <button class="case-open" type="button">Открыть →</button>
                     </div>
                 </div>
@@ -228,6 +389,14 @@
 
         <div id="screen-collection" class="screen">
             <div class="empty">Коллекция появится здесь после открытия кейсов</div>
+            <div class="gift-mosaic">
+                <img src="img/IMG_6755.jpeg" alt="">
+                <img src="img/IMG_6756.jpeg" alt="">
+                <img src="img/IMG_6757.jpeg" alt="">
+                <img src="img/IMG_6760.jpeg" alt="">
+                <img src="img/IMG_6764.jpeg" alt="">
+                <img src="img/IMG_6781.jpeg" alt="">
+            </div>
         </div>
         <div id="screen-profile" class="screen">
             <div class="empty">Профиль</div>
@@ -236,15 +405,15 @@
 
     <nav class="tabbar">
         <button class="tab active" id="tab-cases" type="button" onclick="showScreen('cases')">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M3 10h18M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <img src="img/cosmos_gift.png" alt="">
             Кейсы
         </button>
         <button class="tab" id="tab-collection" type="button" onclick="showScreen('collection')">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 6.3L21 10l-5 4.4 1.5 6.6L12 17.8 6.5 21 8 14.4 3 10l6.3-.7L12 3z"/></svg>
+            <img src="img/telegram_stars_icon.png" alt="">
             Коллекция
         </button>
         <button class="tab" id="tab-profile" type="button" onclick="showScreen('profile')">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 19c1.5-3.2 4-4.8 7-4.8S17.5 15.8 19 19"/></svg>
+            <img src="img/cosmos_app_icon.png" alt="">
             Профиль
         </button>
     </nav>
@@ -268,9 +437,20 @@
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100;
 
+    const DAILY_CASES = [
+        { name: 'Пульсар', img: 'img/cosmos_elite.png' },
+        { name: 'Квазар', img: 'img/cosmos_premium.png' },
+        { name: 'Зенит', img: 'img/cosmos_gift.png' },
+        { name: 'Орион', img: 'img/cosmos_standard.png' },
+        { name: 'Вега', img: 'img/cosmos_premium.png' },
+        { name: 'Альтаир', img: 'img/cosmos_elite.png' },
+        { name: 'Комета', img: 'img/cosmos_gift.png' }
+    ];
+
     let userStars = 0;
     let telegramId = null;
     let tonConnectUI = null;
+    let lastDayKey = null;
     const tg = window.Telegram?.WebApp;
 
     if(tg) { tg.expand(); }
@@ -297,9 +477,14 @@
     }
 
     function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
+        const html = document.documentElement;
+        html.classList.remove('theme-fx');
+        void html.offsetWidth;
+        html.classList.add('theme-fx');
+        html.setAttribute('data-theme', theme);
         try { localStorage.setItem('cosmos-theme', theme); } catch (e) {}
         syncThemeButtons();
+        setTimeout(() => html.classList.remove('theme-fx'), 720);
     }
 
     function showScreen(name) {
@@ -311,8 +496,61 @@
 
     function renderBalance() {
         const starEl = document.getElementById('balStars');
-        if (starEl) starEl.textContent = (userStars / TON_RATE).toFixed(2);
+        const tonEl = document.getElementById('balTon');
+        if (starEl) starEl.textContent = String(userStars);
+        if (tonEl) tonEl.textContent = (userStars / TON_RATE).toFixed(2);
     }
+
+    function dayKey(date) {
+        return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+    }
+
+    function msUntilMidnight(date) {
+        const next = new Date(date);
+        next.setHours(24, 0, 0, 0);
+        return next.getTime() - date.getTime();
+    }
+
+    function pad(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function applyDailyCase(animate) {
+        const now = new Date();
+        const key = dayKey(now);
+        const item = DAILY_CASES[key % DAILY_CASES.length];
+        const img = document.getElementById('dailyCaseImg');
+        const title = document.getElementById('dailyCaseName');
+        if (title) title.textContent = item.name;
+        if (img) {
+            img.src = item.img;
+            if (animate) {
+                img.classList.remove('swap');
+                void img.offsetWidth;
+                img.classList.add('swap');
+            }
+        }
+        lastDayKey = key;
+    }
+
+    function tickDailyCase() {
+        const now = new Date();
+        const left = msUntilMidnight(now);
+        const total = 24 * 60 * 60 * 1000;
+        const h = Math.floor(left / 3600000);
+        const m = Math.floor((left % 3600000) / 60000);
+        const s = Math.floor((left % 60000) / 1000);
+        const timer = document.getElementById('dailyTimer');
+        const bar = document.getElementById('dailyBar');
+        if (timer) timer.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+        if (bar) bar.style.transform = 'scaleX(' + (left / total) + ')';
+        const key = dayKey(now);
+        if (lastDayKey !== null && key !== lastDayKey) applyDailyCase(true);
+    }
+
+    applyDailyCase(false);
+    tickDailyCase();
+    setInterval(tickDailyCase, 1000);
 
     setTimeout(() => {
         document.getElementById('preloader').style.opacity = '0';
