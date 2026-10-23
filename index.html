@@ -36,6 +36,8 @@
             --shadow: 0 10px 24px rgba(0,0,0,0.45);
             --pad: 16px;
             --fx: rgba(255,255,255,0.16);
+            --orbit: rgba(255,255,255,0.14);
+            --glow: rgba(255,255,255,0.07);
             --font: "Manrope", sans-serif;
             --font-ui: "Inter", sans-serif;
         }
@@ -54,6 +56,8 @@
             --switch-on: #111111;
             --shadow: 0 10px 24px rgba(0,0,0,0.08);
             --fx: rgba(17,17,17,0.1);
+            --orbit: rgba(17,17,17,0.12);
+            --glow: rgba(255,255,255,0.9);
         }
         html, body {
             background: var(--bg);
@@ -98,10 +102,10 @@
         .topbar { padding: 14px 20px 4px; display: flex; justify-content: space-between; align-items: flex-start; }
         .brand { display: flex; align-items: flex-start; gap: 10px; }
         .brand-mark {
-            width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
-            box-shadow: var(--shadow); animation: markPulse 4.5s ease-in-out infinite;
+            width: 42px; height: 42px; flex-shrink: 0;
+            animation: markPulse 4.5s ease-in-out infinite;
         }
-        .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+        .brand-mark img { width: 100%; height: 100%; object-fit: contain; }
         .brand-title { font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; }
         .brand-title span { display: block; margin-top: 5px; font-size: 14px; font-weight: 400; color: var(--muted); letter-spacing: 0; transition: color 0.55s ease; }
         @keyframes markPulse {
@@ -129,9 +133,9 @@
             transition: background-color 0.55s ease, border-color 0.55s ease;
         }
         .bal-ico img { width: 22px; height: 22px; object-fit: contain; }
-        .ton-light { display: none; }
-        html[data-theme="light"] .ton-dark { display: none; }
-        html[data-theme="light"] .ton-light { display: block; }
+        .ton-light { display: none !important; }
+        html[data-theme="light"] .ton-dark { display: none !important; }
+        html[data-theme="light"] .ton-light { display: block !important; }
         .bal-meta { min-width: 0; flex: 1; }
         .bal-label { font-family: var(--font-ui); font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 3px; white-space: nowrap; transition: color 0.55s ease; }
         .bal-val { font-size: 22px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
@@ -140,14 +144,15 @@
 
         .hero { padding: 4px 20px 4px; text-align: center; }
         .gift-wrap { position: relative; height: 210px; display: grid; place-items: center; margin: 0 0 2px; }
+        .gift-wrap::before { content: ""; position: absolute; width: 230px; height: 230px; border-radius: 50%; background: radial-gradient(circle, var(--glow) 0%, transparent 68%); transition: background 0.55s ease; }
         .orbit {
-            position: absolute; width: 250px; height: 98px; border: 1.5px solid var(--orbit); border-radius: 50%;
-            top: 86px; animation: orbitSpin 12s linear infinite; transition: border-color 0.55s ease;
+            position: absolute; width: 236px; height: 84px; border: 1.5px solid var(--orbit); border-radius: 50%;
+            top: 63px; animation: orbitSpin 14s ease-in-out infinite alternate; transition: border-color 0.55s ease;
         }
-        .orbit:nth-child(2) { width: 220px; height: 82px; top: 98px; opacity: 0.7; animation-duration: 16s; animation-direction: reverse; }
+        .orbit:nth-child(2) { width: 204px; height: 70px; top: 70px; opacity: 0.7; animation-duration: 18s; animation-direction: alternate-reverse; }
         @keyframes orbitSpin {
-            0% { transform: rotate(-18deg); }
-            100% { transform: rotate(342deg); }
+            0% { transform: rotate(-22deg); }
+            100% { transform: rotate(22deg); }
         }
         .hero-case {
             position: relative; z-index: 2; width: 210px; height: 186px; object-fit: contain;
@@ -156,7 +161,7 @@
             animation: floatCase 4.2s ease-in-out infinite;
             transition: opacity 0.45s ease, transform 0.45s ease, filter 0.55s ease;
         }
-        html[data-theme="light"] .hero-case { filter: drop-shadow(0 14px 16px rgba(0,0,0,0.12)); }
+        html[data-theme="light"] .hero-case { filter: drop-shadow(0 0 0.6px rgba(0,0,0,0.55)) drop-shadow(0 14px 16px rgba(0,0,0,0.14)); }
         @keyframes floatCase {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -227,10 +232,12 @@
             from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: none; }
         }
-        .case-art-wrap { height: 92px; display: grid; place-items: center; margin-bottom: 6px; }
-        .case-art { width: 108px; height: 92px; object-fit: contain; background: transparent; animation: floatCase 4.8s ease-in-out infinite; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.35)); }
-        html[data-theme="light"] .case-art { filter: drop-shadow(0 8px 10px rgba(0,0,0,0.1)); }
+        .case-art-wrap { height: 104px; display: grid; place-items: center; margin-bottom: 6px; }
+        .case-art { width: 116px; height: 104px; object-fit: contain; background: transparent; animation: floatCase 4.8s ease-in-out infinite; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.35)); }
+        html[data-theme="light"] .case-art { filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.55)) drop-shadow(0 8px 10px rgba(0,0,0,0.12)); }
         .case-card:nth-child(2) .case-art { animation-delay: 0.6s; }
+        .case-card:nth-child(3) .case-art { animation-delay: 1.2s; }
+        .case-card:nth-child(4) .case-art { animation-delay: 1.8s; }
         .case-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
         .case-card .price { font-family: var(--font-ui); color: var(--muted); font-size: 13px; font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 4px; transition: color 0.55s ease; }
         .case-card .price img { width: 12px; height: 12px; object-fit: contain; }
@@ -243,8 +250,10 @@
             to { opacity: 1; transform: none; }
         }
         .empty-state { padding: 90px 30px; text-align: center; }
+        .empty-ico { width: 64px; height: 64px; margin: 0 auto 18px; opacity: 0.9; animation: floatCase 4.2s ease-in-out infinite; }
         .empty-state h3 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
         .empty-state p { color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.45; }
+        .empty-state .open-btn { margin-top: 22px; }
 
         .profile { padding: 12px 20px 24px; }
         .profile-user {
@@ -252,8 +261,11 @@
             border-radius: 22px; padding: 16px; box-shadow: var(--shadow);
             transition: background-color 0.55s ease, border-color 0.55s ease;
         }
-        .avatar { width: 52px; height: 52px; border-radius: 16px; overflow: hidden; flex-shrink: 0; }
+        .avatar { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: grid; place-items: center; background: var(--card-2); border: 1px solid var(--line); font-size: 22px; font-weight: 800; color: var(--text); }
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar .logo-ico { width: 64%; height: 64%; object-fit: contain; }
+        .profile-user > div:last-child { min-width: 0; }
+        .profile-name, .profile-id { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .profile-name { font-size: 18px; font-weight: 700; }
         .profile-id { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 3px; }
         .settings {
@@ -292,17 +304,23 @@
             gap: 4px; font-family: var(--font-ui); font-size: 12px; font-weight: 500; cursor: pointer; padding: 6px 0;
             transition: color 0.3s ease, transform 0.3s ease;
         }
-        .tab img { width: 22px; height: 22px; object-fit: contain; opacity: 0.45; background: transparent; transition: opacity 0.3s ease, transform 0.3s ease; }
+        .tab img, .tab svg { width: 22px; height: 22px; object-fit: contain; opacity: 0.45; background: transparent; transition: opacity 0.3s ease, transform 0.3s ease; }
         .tab.active { color: var(--text); transform: translateY(-1px); }
-        .tab.active img { opacity: 1; transform: scale(1.08); }
-        #tab-collection img, #tab-profile img { border-radius: 6px; }
+        .tab.active img, .tab.active svg { opacity: 1; transform: scale(1.08); }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 100; display: none; align-items: center; justify-content: center; }
         .modal.show { display: flex; animation: screenIn 0.28s ease; }
         .box { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 26px 20px; width: 90%; max-width: 350px; text-align: center; color: var(--text); transition: background-color 0.55s ease, border-color 0.55s ease, color 0.55s ease; }
-        .box h3 { margin-bottom: 8px; font-size: 28px; font-weight: 800; }
+        .box h3 { margin-bottom: 8px; font-size: 26px; font-weight: 800; letter-spacing: -0.6px; }
+        .box-ico { width: 52px; height: 52px; margin: 0 auto 12px; }
+        .ton-hint { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); margin: -6px 0 15px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .ton-hint img { width: 12px; height: 12px; }
+        #payStatus { margin-top: 12px; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); word-break: break-word; min-height: 16px; }
+        #payStatus.ok { color: #39d98a; }
+        #payStatus.err { color: #ff5c5c; }
         .box p { color: var(--muted); font-size: 14px; font-weight: 400; margin-bottom: 15px; }
-        .num-input { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-family: var(--font-ui); font-size: 22px; text-align: center; margin-bottom: 15px; font-weight: 500; outline: none; }
+        .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .num-input { -moz-appearance: textfield; width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-family: var(--font-ui); font-size: 22px; text-align: center; margin-bottom: 15px; font-weight: 500; outline: none; }
         .pay-btn { background: var(--cta-bg); color: var(--cta-fg); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 8px; }
         .cancel-btn { background: none; border: none; color: var(--muted); margin-top: 6px; font-size: 14px; font-weight: 400; cursor: pointer; }
     </style>
@@ -316,7 +334,7 @@
     <div id="app">
         <div class="topbar">
             <div class="brand">
-                <div class="brand-mark"><img src="img/cosmos_app_icon.png" alt=""></div>
+                <div class="brand-mark"><img class="ton-dark" src="img/logo_white.png" alt="cosmos"><img class="ton-light" src="img/logo_black.png" alt="cosmos"></div>
                 <div class="brand-title">cosmos<span>подарки в Telegram</span></div>
             </div>
             <div class="theme-switch" role="group" aria-label="Тема">
@@ -332,7 +350,10 @@
         <div id="screen-cases" class="screen active">
             <div class="balances">
                 <div class="bal-card" role="button" onclick="openTopup()">
-                    <div class="bal-ico"><img src="img/telegram_stars_icon.png" alt=""></div>
+                    <div class="bal-ico">
+                        <img class="ton-dark" src="img/star_white.png" alt="">
+                        <img class="ton-light" src="img/star_black.png" alt="">
+                    </div>
                     <div class="bal-meta">
                         <div class="bal-label">Звёзды</div>
                         <div class="bal-val"><span id="balStars">0</span></div>
@@ -356,7 +377,7 @@
                 <div class="gift-wrap">
                     <div class="orbit"></div>
                     <div class="orbit"></div>
-                    <img class="hero-case" id="dailyCaseImg" src="img/cosmos_elite.png" alt="">
+                    <img class="hero-case" id="dailyCaseImg" src="img/case_apex.png" alt="">
                 </div>
                 <div class="daily-badge"><i></i> Кейс дня</div>
                 <h2 id="dailyCaseName">Пульсар</h2>
@@ -376,7 +397,7 @@
                 </div>
                 <div class="cases" id="casesGrid">
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_standard.png" alt=""></div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/case_orbit.png" alt=""></div>
                         <h4>Орбита</h4>
                         <div class="price">
                             <img class="ton-dark" src="img/ton_white.png" alt="">
@@ -386,7 +407,7 @@
                         <button class="case-open" type="button">Открыть →</button>
                     </div>
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_premium.png" alt=""></div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/case_nebula.png" alt=""></div>
                         <h4>Небула</h4>
                         <div class="price">
                             <img class="ton-dark" src="img/ton_white.png" alt="">
@@ -396,7 +417,7 @@
                         <button class="case-open" type="button">Открыть →</button>
                     </div>
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_elite.png" alt=""></div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/case_apex.png" alt=""></div>
                         <h4>Апекс</h4>
                         <div class="price">
                             <img class="ton-dark" src="img/ton_white.png" alt="">
@@ -406,7 +427,7 @@
                         <button class="case-open" type="button">Открыть →</button>
                     </div>
                     <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/cosmos_gift.png" alt=""></div>
+                        <div class="case-art-wrap"><img class="case-art" src="img/case_sirius.png" alt=""></div>
                         <h4>Сириус</h4>
                         <div class="price">
                             <img class="ton-dark" src="img/ton_white.png" alt="">
@@ -421,14 +442,17 @@
 
         <div id="screen-collection" class="screen">
             <div class="empty-state">
+                <img class="empty-ico ton-dark" src="img/star_white.png" alt="">
+                <img class="empty-ico ton-light" src="img/star_black.png" alt="">
                 <h3>Пока пусто</h3>
                 <p>Открой кейс, и подарки появятся здесь</p>
+                <button class="open-btn" type="button" onclick="showScreen('cases')">К кейсам →</button>
             </div>
         </div>
         <div id="screen-profile" class="screen">
             <div class="profile">
                 <div class="profile-user">
-                    <div class="avatar"><img src="img/cosmos_app_icon.png" alt=""></div>
+                    <div class="avatar" id="profileAvatar"><img class="logo-ico ton-dark" src="img/logo_white.png" alt=""><img class="logo-ico ton-light" src="img/logo_black.png" alt=""></div>
                     <div>
                         <div class="profile-name" id="profileName">Игрок</div>
                         <div class="profile-id" id="profileId">Telegram</div>
@@ -466,27 +490,35 @@
 
     <nav class="tabbar">
         <button class="tab active" id="tab-cases" type="button" onclick="showScreen('cases')">
-            <img src="img/cosmos_gift.png" alt="">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2.5"/><path d="M2 8h20M12 8v13M12 8c-1.6-3.6-6-4.4-6-1.6C6 8 9 8 12 8zM12 8c1.6-3.6 6-4.4 6-1.6C18 8 15 8 12 8z"/></svg>
             Кейсы
         </button>
         <button class="tab" id="tab-collection" type="button" onclick="showScreen('collection')">
-            <img src="img/telegram_stars_icon.png" alt="">
+            <img class="ton-dark" src="img/star_white.png" alt="">
+            <img class="ton-light" src="img/star_black.png" alt="">
             Коллекция
         </button>
         <button class="tab" id="tab-profile" type="button" onclick="showScreen('profile')">
-            <img src="img/cosmos_app_icon.png" alt="">
+            <img class="ton-dark" src="img/logo_white.png" alt="">
+            <img class="ton-light" src="img/logo_black.png" alt="">
             Профиль
         </button>
     </nav>
 
-    <div class="modal" id="topupModal">
+    <div class="modal" id="topupModal" onclick="if (event.target === this) closeTopup()">
         <div class="box">
-            <h3>ПОПОЛНЕНИЕ</h3>
-            <p>Введите сумму (мин. 50)</p>
-            <input type="number" class="num-input" id="topupAmount" placeholder="100" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <button class="pay-btn" onclick="startTonPayment()">ОПЛАТИТЬ TON</button>
-            <button class="cancel-btn" onclick="document.getElementById('topupModal').classList.remove('show')">ОТМЕНА</button>
-            <div id="payStatus" style="margin-top:15px; color:gold; font-size:12px; word-break: break-word;"></div>
+            <img class="box-ico ton-dark" src="img/star_white.png" alt="">
+            <img class="box-ico ton-light" src="img/star_black.png" alt="">
+            <h3>Пополнение</h3>
+            <p>Сколько звёзд купить? Минимум 50</p>
+            <input type="number" inputmode="numeric" class="num-input" id="topupAmount" placeholder="100" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateTonHint()">
+            <div class="ton-hint">≈ <span id="tonHint">1.00</span>
+                <img class="ton-dark" src="img/ton_white.png" alt="">
+                <img class="ton-light" src="img/ton_black.png" alt="">
+            </div>
+            <button class="pay-btn" type="button" onclick="startTonPayment()">Оплатить в TON</button>
+            <button class="cancel-btn" type="button" onclick="closeTopup()">Отмена</button>
+            <div id="payStatus"></div>
         </div>
     </div>
 
@@ -499,13 +531,13 @@
     const TON_RATE = 100;
 
     const DAILY_CASES = [
-        { name: 'Пульсар', img: 'img/cosmos_elite.png' },
-        { name: 'Квазар', img: 'img/cosmos_premium.png' },
-        { name: 'Зенит', img: 'img/cosmos_gift.png' },
-        { name: 'Орион', img: 'img/cosmos_standard.png' },
-        { name: 'Вега', img: 'img/cosmos_premium.png' },
-        { name: 'Альтаир', img: 'img/cosmos_elite.png' },
-        { name: 'Комета', img: 'img/cosmos_gift.png' }
+        { name: 'Пульсар', img: 'img/case_apex.png' },
+        { name: 'Квазар', img: 'img/case_nebula.png' },
+        { name: 'Зенит', img: 'img/case_sirius.png' },
+        { name: 'Орион', img: 'img/case_orbit.png' },
+        { name: 'Вега', img: 'img/case_nebula.png' },
+        { name: 'Альтаир', img: 'img/case_apex.png' },
+        { name: 'Комета', img: 'img/case_sirius.png' }
     ];
 
     let userStars = 0;
@@ -566,12 +598,20 @@
         void html.offsetWidth;
         html.classList.add('theme-fx');
         html.setAttribute('data-theme', theme);
+        haptic();
         try { localStorage.setItem('cosmos-theme', theme); } catch (e) {}
         syncThemeButtons();
         setTimeout(() => html.classList.remove('theme-fx'), 720);
     }
 
+    function haptic(style) {
+        const el = document.getElementById('setHaptic');
+        if (el && !el.classList.contains('on')) return;
+        try { tg?.HapticFeedback?.impactOccurred(style || 'light'); } catch (e) {}
+    }
+
     function showScreen(name) {
+        haptic();
         ['cases', 'collection', 'profile'].forEach((id) => {
             document.getElementById('screen-' + id).classList.toggle('active', id === name);
             document.getElementById('tab-' + id).classList.toggle('active', id === name);
@@ -645,6 +685,20 @@
     syncThemeButtons();
     restoreSettings();
 
+    function renderAvatar(user) {
+        const box = document.getElementById('profileAvatar');
+        if (!box) return;
+        const initial = (user.first_name || user.username || '?').trim().charAt(0).toUpperCase();
+        const showInitial = () => { box.textContent = initial; };
+        if (!user.photo_url) return showInitial();
+        const img = new Image();
+        img.alt = '';
+        img.referrerPolicy = 'no-referrer';
+        img.onload = () => { box.replaceChildren(img); };
+        img.onerror = showInitial;
+        img.src = user.photo_url;
+    }
+
     async function loadUser() {
         if (!tg || !tg.initDataUnsafe?.user) return;
         const user = tg.initDataUnsafe.user;
@@ -653,6 +707,7 @@
         const idEl = document.getElementById('profileId');
         if (nameEl) nameEl.textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Игрок';
         if (idEl) idEl.textContent = user.username ? '@' + user.username : 'ID ' + user.id;
+        renderAvatar(user);
         const { data } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
         if (data) {
             userStars = data.stars;
@@ -661,31 +716,45 @@
     }
     loadUser();
 
+    function setPayStatus(text, kind) {
+        const el = document.getElementById('payStatus');
+        el.textContent = text;
+        el.className = kind || '';
+    }
+
+    function updateTonHint() {
+        const stars = parseInt(document.getElementById('topupAmount').value) || 100;
+        document.getElementById('tonHint').textContent = (stars / TON_RATE).toFixed(2);
+    }
+
     function openTopup() {
+        haptic();
         document.getElementById('topupModal').classList.add('show');
-        document.getElementById('payStatus').textContent = '';
+        setPayStatus('');
+        updateTonHint();
+    }
+
+    function closeTopup() {
+        document.getElementById('topupModal').classList.remove('show');
     }
 
     async function startTonPayment() {
         const amountInput = document.getElementById('topupAmount');
         const starsToAdd = parseInt(amountInput.value);
-        const statusEl = document.getElementById('payStatus');
-
-        statusEl.style.color = 'gold';
-        statusEl.textContent = "Обработка...";
+        setPayStatus("Обработка...");
 
         if (!starsToAdd || starsToAdd < 50) {
-            statusEl.textContent = "Ошибка: Минимальная сумма 50 звезд.";
+            setPayStatus("Ошибка: Минимальная сумма 50 звезд.", 'err');
             return;
         }
 
         if (!tonConnectUI) {
-            statusEl.textContent = "Ошибка: Кошелек не инициализирован.";
+            setPayStatus("Ошибка: Кошелек не инициализирован.", 'err');
             return;
         }
 
         if (!tonConnectUI.wallet) {
-            statusEl.textContent = "Подключение кошелька...";
+            setPayStatus("Подключение кошелька...");
             tonConnectUI.openModal();
             return;
         }
@@ -694,7 +763,7 @@
         const invoiceId = 'PAY_' + Date.now();
 
         try {
-            statusEl.textContent = "Формирование транзакции...";
+            setPayStatus("Формирование транзакции...");
 
             let payload = null;
             if (window.TON_CORE && window.TON_CORE.beginCell) {
@@ -712,9 +781,9 @@
 
             if (payload) tx.messages[0].payload = payload;
 
-            statusEl.textContent = "Ожидание подтверждения в приложении...";
+            setPayStatus("Ожидание подтверждения в приложении...");
             await tonConnectUI.sendTransaction(tx);
-            statusEl.textContent = "Транзакция отправлена! Ждем сеть...";
+            setPayStatus("Транзакция отправлена! Ждем сеть...");
 
             let attempts = 0;
             const checkInterval = setInterval(async () => {
@@ -733,8 +802,7 @@
 
                     if (res.paid) {
                         clearInterval(checkInterval);
-                        statusEl.style.color = '#00ff00';
-                        statusEl.textContent = "Оплата прошла! Начисляем...";
+                        setPayStatus("Оплата прошла! Начисляем...", 'ok');
 
                         userStars += starsToAdd;
                         renderBalance();
@@ -742,26 +810,23 @@
                             await supabase.from('players').update({ stars: userStars }).eq('telegram_id', telegramId);
                         }
 
-                        statusEl.textContent = `Успешно начислено ${starsToAdd} звезд!`;
-                        setTimeout(() => document.getElementById('topupModal').classList.remove('show'), 2000);
+                        setPayStatus(`Успешно начислено ${starsToAdd} звезд!`, 'ok');
+                        setTimeout(closeTopup, 2000);
                     } else if (attempts > 12) {
                         clearInterval(checkInterval);
-                        statusEl.style.color = 'red';
-                        statusEl.textContent = "Сеть не подтвердила платеж. Попробуйте позже.";
+                        setPayStatus("Сеть не подтвердила платеж. Попробуйте позже.", 'err');
                     }
                 } catch (err) {
                     if (attempts > 12) {
                         clearInterval(checkInterval);
-                        statusEl.style.color = 'red';
-                        statusEl.textContent = "Сеть не подтвердила платеж. Попробуйте позже.";
+                        setPayStatus("Сеть не подтвердила платеж. Попробуйте позже.", 'err');
                     }
                 }
             }, 5000);
 
         } catch (e) {
             console.error("TX Error:", e);
-            statusEl.style.color = 'red';
-            statusEl.textContent = "Отклонено: " + (e.message || "Пользователь отменил транзакцию или недостаточно TON");
+            setPayStatus("Отклонено: " + (e.message || "Пользователь отменил транзакцию или недостаточно TON"), 'err');
         }
     }
 </script>
