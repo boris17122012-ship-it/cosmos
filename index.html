@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>cosmos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/@ton/core@latest/dist/browser.js"></script>
@@ -33,6 +36,8 @@
             --shadow: 0 18px 40px rgba(0,0,0,0.35);
             --orbit: rgba(255,255,255,0.22);
             --fx: rgba(255,255,255,0.16);
+            --font: "Manrope", sans-serif;
+            --font-ui: "Inter", sans-serif;
         }
         html[data-theme="light"] {
             --bg: #f3f3f4;
@@ -55,10 +60,11 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100%;
+            min-height: 100dvh;
             transition: background-color 0.55s ease, color 0.55s ease;
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { overflow-x: hidden; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; user-select: none; }
+        body { overflow-x: hidden; background: var(--bg); font-weight: 400; }
         img { display: block; max-width: 100%; }
 
         .theme-veil {
@@ -74,12 +80,10 @@
         .spark {
             position: fixed; pointer-events: none; z-index: 0; color: var(--spark); opacity: 0.85;
             animation: twinkle 2.8s ease-in-out infinite;
-            transition: color 0.55s ease, left 0.55s ease, right 0.55s ease, top 0.55s ease;
+            transition: color 0.55s ease;
         }
         .spark-a { top: 86px; right: 22px; font-size: 18px; }
-        .spark-b { bottom: 210px; right: 18px; font-size: 14px; opacity: 0.5; animation-delay: 1.2s; }
-        html[data-theme="light"] .spark-a { top: 92px; left: auto; right: 18px; }
-        html[data-theme="light"] .spark-b { left: 22px; right: auto; bottom: 240px; }
+        .spark-b { bottom: 220px; left: 18px; font-size: 14px; opacity: 0.45; animation-delay: 1.2s; }
         @keyframes twinkle {
             0%, 100% { opacity: 0.25; transform: scale(0.85) rotate(0deg); }
             50% { opacity: 1; transform: scale(1.15) rotate(18deg); }
@@ -89,7 +93,7 @@
         .orbit-loader { width: 54px; height: 54px; border: 2px solid transparent; border-top-color: var(--text); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        #app { opacity: 0; transition: opacity 0.45s; position: relative; z-index: 1; max-width: 430px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+        #app { opacity: 0; transition: opacity 0.45s, background-color 0.55s ease; position: relative; z-index: 1; max-width: 430px; margin: 0 auto; min-height: 100dvh; background: var(--bg); padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 
         .topbar { padding: 14px 20px 4px; display: flex; justify-content: space-between; align-items: flex-start; }
         .brand { display: flex; align-items: flex-start; gap: 10px; }
@@ -99,7 +103,7 @@
         }
         .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
         .brand-title { font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; }
-        .brand-title span { display: block; margin-top: 5px; font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; transition: color 0.55s ease; }
+        .brand-title span { display: block; margin-top: 5px; font-size: 14px; font-weight: 400; color: var(--muted); letter-spacing: 0; transition: color 0.55s ease; }
         @keyframes markPulse {
             0%, 100% { transform: rotate(-4deg) scale(1); }
             50% { transform: rotate(4deg) scale(1.04); }
@@ -129,8 +133,8 @@
         html[data-theme="light"] .ton-dark { display: none; }
         html[data-theme="light"] .ton-light { display: block; }
         .bal-meta { min-width: 0; flex: 1; }
-        .bal-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; white-space: nowrap; transition: color 0.55s ease; }
-        .bal-val { font-size: 14px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+        .bal-label { font-family: var(--font-ui); font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 3px; white-space: nowrap; transition: color 0.55s ease; }
+        .bal-val { font-size: 22px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
         .bal-val img { width: 13px; height: 13px; object-fit: contain; }
         .chev { opacity: 0.4; font-size: 13px; flex-shrink: 0; }
 
@@ -147,11 +151,12 @@
         }
         .hero-case {
             position: relative; z-index: 2; width: 210px; height: 186px; object-fit: contain;
-            filter: drop-shadow(0 18px 18px rgba(0,0,0,0.28));
+            background: transparent;
+            filter: drop-shadow(0 16px 18px rgba(0,0,0,0.45));
             animation: floatCase 4.2s ease-in-out infinite;
-            mix-blend-mode: multiply;
             transition: opacity 0.45s ease, transform 0.45s ease, filter 0.55s ease;
         }
+        html[data-theme="light"] .hero-case { filter: drop-shadow(0 14px 16px rgba(0,0,0,0.12)); }
         @keyframes floatCase {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -164,7 +169,7 @@
 
         .daily-badge {
             display: inline-flex; align-items: center; gap: 6px; margin: 2px auto 8px;
-            padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+            padding: 6px 12px; border-radius: 999px; font-family: var(--font-ui); font-size: 12px; font-weight: 500; letter-spacing: 0.4px;
             background: var(--card); border: 1px solid var(--line); color: var(--text);
             box-shadow: var(--shadow); animation: badgeGlow 2.4s ease-in-out infinite;
             transition: background-color 0.55s ease, border-color 0.55s ease, color 0.55s ease;
@@ -175,12 +180,12 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-2px); }
         }
-        .hero h2 { font-size: 30px; letter-spacing: -0.8px; margin-top: 0; }
-        .hero p { color: var(--muted); font-size: 13px; line-height: 1.35; margin: 6px auto 14px; max-width: 240px; transition: color 0.55s ease; }
+        .hero h2 { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; margin-top: 0; }
+        .hero p { color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.35; margin: 6px auto 14px; max-width: 240px; transition: color 0.55s ease; }
         .open-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px;
             background: var(--cta-bg); color: var(--cta-fg); border: 0; border-radius: 999px; padding: 13px 22px;
-            font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+            font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
             transition: background-color 0.55s ease, color 0.55s ease, transform 0.28s ease, box-shadow 0.55s ease;
         }
         .open-btn:active { transform: scale(0.97); }
@@ -190,9 +195,9 @@
             background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
             transition: background-color 0.55s ease, border-color 0.55s ease;
         }
-        .countdown-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+        .countdown-label { font-size: 13px; font-weight: 400; color: var(--muted); margin-bottom: 6px; }
         .timer {
-            font-size: 22px; font-weight: 800; letter-spacing: 1.5px; font-variant-numeric: tabular-nums;
+            font-family: var(--font-ui); font-size: 14px; font-weight: 500; letter-spacing: 1.5px; font-variant-numeric: tabular-nums;
         }
         .timer-bar {
             margin-top: 8px; height: 4px; border-radius: 99px; background: var(--line); overflow: hidden;
@@ -204,8 +209,8 @@
 
         .section { padding: 16px 20px 24px; }
         .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
-        .section-head h3 { font-size: 18px; font-weight: 800; }
-        .all-link { background: none; border: 0; color: var(--muted); font-size: 13px; cursor: pointer; }
+        .section-head h3 { font-size: 28px; font-weight: 800; }
+        .all-link { background: none; border: 0; color: var(--muted); font-size: 14px; font-weight: 400; cursor: pointer; }
 
         .cases { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .case-card {
@@ -223,12 +228,13 @@
             to { opacity: 1; transform: none; }
         }
         .case-art-wrap { height: 92px; display: grid; place-items: center; margin-bottom: 6px; }
-        .case-art { width: 108px; height: 92px; object-fit: contain; animation: floatCase 4.8s ease-in-out infinite; mix-blend-mode: multiply; }
+        .case-art { width: 108px; height: 92px; object-fit: contain; background: transparent; animation: floatCase 4.8s ease-in-out infinite; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.35)); }
+        html[data-theme="light"] .case-art { filter: drop-shadow(0 8px 10px rgba(0,0,0,0.1)); }
         .case-card:nth-child(2) .case-art { animation-delay: 0.6s; }
-        .case-card h4 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
-        .case-card .price { color: var(--muted); font-size: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 4px; transition: color 0.55s ease; }
+        .case-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .case-card .price { font-family: var(--font-ui); color: var(--muted); font-size: 13px; font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 4px; transition: color 0.55s ease; }
         .case-card .price img { width: 12px; height: 12px; object-fit: contain; }
-        .case-open { background: none; border: 0; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.55s ease; }
+        .case-open { background: none; border: 0; color: var(--text); font-size: 15px; font-weight: 700; cursor: pointer; transition: color 0.55s ease; }
 
         .screen { display: none; }
         .screen.active { display: block; animation: screenIn 0.42s ease; }
@@ -236,17 +242,44 @@
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: none; }
         }
-        .empty { padding: 48px 24px 24px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.45; }
-        .gift-mosaic { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 20px 20px; }
-        .gift-mosaic img {
-            width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px;
-            border: 1px solid var(--line); animation: cardIn 0.6s ease both;
+        .empty-state { padding: 90px 30px; text-align: center; }
+        .empty-state h3 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .empty-state p { color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.45; }
+
+        .profile { padding: 12px 20px 24px; }
+        .profile-user {
+            display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+            border-radius: 22px; padding: 16px; box-shadow: var(--shadow);
+            transition: background-color 0.55s ease, border-color 0.55s ease;
         }
-        .gift-mosaic img:nth-child(2) { animation-delay: 0.08s; }
-        .gift-mosaic img:nth-child(3) { animation-delay: 0.16s; }
-        .gift-mosaic img:nth-child(4) { animation-delay: 0.24s; }
-        .gift-mosaic img:nth-child(5) { animation-delay: 0.32s; }
-        .gift-mosaic img:nth-child(6) { animation-delay: 0.4s; }
+        .avatar { width: 52px; height: 52px; border-radius: 16px; overflow: hidden; flex-shrink: 0; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-name { font-size: 18px; font-weight: 700; }
+        .profile-id { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 3px; }
+        .settings {
+            margin-top: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+            overflow: hidden; box-shadow: var(--shadow);
+            transition: background-color 0.55s ease, border-color 0.55s ease;
+        }
+        .set-row {
+            width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            padding: 16px 18px; background: none; border: 0; border-bottom: 1px solid var(--line);
+            color: var(--text); font-size: 15px; font-weight: 700; text-align: left; cursor: pointer;
+        }
+        .set-row:last-child { border-bottom: 0; }
+        .set-val { font-family: var(--font-ui); color: var(--muted); font-size: 13px; font-weight: 500; }
+        .toggle {
+            width: 44px; height: 26px; border: 0; border-radius: 99px; background: var(--switch);
+            position: relative; cursor: pointer; flex-shrink: 0; transition: background-color 0.25s ease;
+        }
+        .toggle i {
+            position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+            background: #fff; display: block; transition: transform 0.25s ease, background-color 0.25s ease;
+        }
+        .toggle.on { background: var(--text); }
+        .toggle.on i { transform: translateX(18px); }
+        html[data-theme="dark"] .toggle.on { background: #fff; }
+        html[data-theme="dark"] .toggle.on i { background: #111; }
 
         .tabbar {
             position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 430px;
@@ -256,11 +289,10 @@
         }
         .tab {
             background: none; border: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center;
-            gap: 4px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 6px 0;
+            gap: 4px; font-family: var(--font-ui); font-size: 12px; font-weight: 500; cursor: pointer; padding: 6px 0;
             transition: color 0.3s ease, transform 0.3s ease;
         }
-        .tab img { width: 22px; height: 22px; object-fit: contain; opacity: 0.45; transition: opacity 0.3s ease, transform 0.3s ease, filter 0.55s ease; mix-blend-mode: multiply; }
-        #tab-collection img, #tab-profile img { mix-blend-mode: normal; }
+        .tab img { width: 22px; height: 22px; object-fit: contain; opacity: 0.45; background: transparent; transition: opacity 0.3s ease, transform 0.3s ease; }
         .tab.active { color: var(--text); transform: translateY(-1px); }
         .tab.active img { opacity: 1; transform: scale(1.08); }
         #tab-collection img, #tab-profile img { border-radius: 6px; }
@@ -268,11 +300,11 @@
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 100; display: none; align-items: center; justify-content: center; }
         .modal.show { display: flex; animation: screenIn 0.28s ease; }
         .box { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 26px 20px; width: 90%; max-width: 350px; text-align: center; color: var(--text); transition: background-color 0.55s ease, border-color 0.55s ease, color 0.55s ease; }
-        .box h3 { margin-bottom: 8px; }
-        .box p { color: var(--muted); font-size: 12px; margin-bottom: 15px; }
-        .num-input { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-size: 24px; text-align: center; margin-bottom: 15px; font-weight: 800; outline: none; }
-        .pay-btn { background: var(--cta-bg); color: var(--cta-fg); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; width: 100%; cursor: pointer; margin-bottom: 8px; }
-        .cancel-btn { background: none; border: none; color: var(--muted); margin-top: 6px; cursor: pointer; }
+        .box h3 { margin-bottom: 8px; font-size: 28px; font-weight: 800; }
+        .box p { color: var(--muted); font-size: 14px; font-weight: 400; margin-bottom: 15px; }
+        .num-input { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-family: var(--font-ui); font-size: 22px; text-align: center; margin-bottom: 15px; font-weight: 500; outline: none; }
+        .pay-btn { background: var(--cta-bg); color: var(--cta-fg); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 8px; }
+        .cancel-btn { background: none; border: none; color: var(--muted); margin-top: 6px; font-size: 14px; font-weight: 400; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -388,18 +420,47 @@
         </div>
 
         <div id="screen-collection" class="screen">
-            <div class="empty">Коллекция появится здесь после открытия кейсов</div>
-            <div class="gift-mosaic">
-                <img src="img/IMG_6755.jpeg" alt="">
-                <img src="img/IMG_6756.jpeg" alt="">
-                <img src="img/IMG_6757.jpeg" alt="">
-                <img src="img/IMG_6760.jpeg" alt="">
-                <img src="img/IMG_6764.jpeg" alt="">
-                <img src="img/IMG_6781.jpeg" alt="">
+            <div class="empty-state">
+                <h3>Пока пусто</h3>
+                <p>Открой кейс, и подарки появятся здесь</p>
             </div>
         </div>
         <div id="screen-profile" class="screen">
-            <div class="empty">Профиль</div>
+            <div class="profile">
+                <div class="profile-user">
+                    <div class="avatar"><img src="img/cosmos_app_icon.png" alt=""></div>
+                    <div>
+                        <div class="profile-name" id="profileName">Игрок</div>
+                        <div class="profile-id" id="profileId">Telegram</div>
+                    </div>
+                </div>
+                <div class="settings">
+                    <div class="set-row">
+                        <span>Уведомления</span>
+                        <button class="toggle on" id="setNotify" type="button" onclick="toggleSetting(this, 'notify')" aria-label="Уведомления"><i></i></button>
+                    </div>
+                    <div class="set-row">
+                        <span>Вибрация</span>
+                        <button class="toggle on" id="setHaptic" type="button" onclick="toggleSetting(this, 'haptic')" aria-label="Вибрация"><i></i></button>
+                    </div>
+                    <div class="set-row">
+                        <span>Язык</span>
+                        <span class="set-val">Русский</span>
+                    </div>
+                    <button class="set-row" type="button" onclick="openTopup()">
+                        <span>Пополнить баланс</span>
+                        <span class="set-val">→</span>
+                    </button>
+                    <button class="set-row" type="button" onclick="alert('Напиши в поддержку: @cosmos')">
+                        <span>Поддержка</span>
+                        <span class="set-val">@cosmos</span>
+                    </button>
+                    <div class="set-row">
+                        <span>О приложении</span>
+                        <span class="set-val">cosmos 1.0</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -453,7 +514,10 @@
     let lastDayKey = null;
     const tg = window.Telegram?.WebApp;
 
-    if(tg) { tg.expand(); }
+    if (tg) {
+        if (tg.ready) tg.ready();
+        tg.expand();
+    }
 
     try {
         tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -470,10 +534,30 @@
         const theme = currentTheme();
         document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
         document.getElementById('themeLight').classList.toggle('active', theme === 'light');
+        const bg = theme === 'light' ? '#f3f3f4' : '#070707';
+        document.documentElement.style.background = bg;
+        document.body.style.background = bg;
         if (tg && tg.setHeaderColor) {
-            tg.setHeaderColor(theme === 'light' ? '#f3f3f4' : '#070707');
-            tg.setBackgroundColor(theme === 'light' ? '#f3f3f4' : '#070707');
+            tg.setHeaderColor(bg);
+            tg.setBackgroundColor(bg);
         }
+    }
+
+    function toggleSetting(btn, key) {
+        btn.classList.toggle('on');
+        try { localStorage.setItem('cosmos-' + key, btn.classList.contains('on') ? '1' : '0'); } catch (e) {}
+    }
+
+    function restoreSettings() {
+        ['notify', 'haptic'].forEach((key) => {
+            const el = document.getElementById('set' + (key === 'notify' ? 'Notify' : 'Haptic'));
+            if (!el) return;
+            try {
+                const saved = localStorage.getItem('cosmos-' + key);
+                if (saved === '0') el.classList.remove('on');
+                if (saved === '1') el.classList.add('on');
+            } catch (e) {}
+        });
     }
 
     function setTheme(theme) {
@@ -559,10 +643,16 @@
     }, 1000);
 
     syncThemeButtons();
+    restoreSettings();
 
     async function loadUser() {
         if (!tg || !tg.initDataUnsafe?.user) return;
-        telegramId = tg.initDataUnsafe.user.id;
+        const user = tg.initDataUnsafe.user;
+        telegramId = user.id;
+        const nameEl = document.getElementById('profileName');
+        const idEl = document.getElementById('profileId');
+        if (nameEl) nameEl.textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Игрок';
+        if (idEl) idEl.textContent = user.username ? '@' + user.username : 'ID ' + user.id;
         const { data } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
         if (data) {
             userStars = data.stars;
