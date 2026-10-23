@@ -33,11 +33,13 @@
             --spark: #ffffff;
             --switch: #1b1b1b;
             --switch-on: #0e0e0e;
-            --shadow: 0 10px 24px rgba(0,0,0,0.45);
+            --shadow: none;
             --pad: 16px;
             --fx: rgba(255,255,255,0.16);
             --orbit: rgba(255,255,255,0.14);
             --glow: rgba(255,255,255,0.07);
+            --floor: rgba(255,255,255,0.10);
+            --shine: rgba(0,0,0,0.45);
             --font: "Manrope", sans-serif;
             --font-ui: "Inter", sans-serif;
         }
@@ -58,6 +60,8 @@
             --fx: rgba(17,17,17,0.1);
             --orbit: rgba(17,17,17,0.12);
             --glow: rgba(255,255,255,0.9);
+            --floor: rgba(0,0,0,0.16);
+            --shine: rgba(255,255,255,0.6);
         }
         html, body {
             background: var(--bg);
@@ -140,7 +144,6 @@
         .bal-label { font-family: var(--font-ui); font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 3px; white-space: nowrap; transition: color 0.55s ease; }
         .bal-val { font-size: 22px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
         .bal-val img { width: 13px; height: 13px; object-fit: contain; }
-        .chev { opacity: 0.4; font-size: 13px; flex-shrink: 0; }
 
         .hero { padding: 4px 20px 4px; text-align: center; }
         .gift-wrap { position: relative; height: 210px; display: grid; place-items: center; margin: 0 0 2px; }
@@ -157,11 +160,19 @@
         .hero-case {
             position: relative; z-index: 2; width: 210px; height: 186px; object-fit: contain;
             background: transparent;
-            filter: drop-shadow(0 16px 18px rgba(0,0,0,0.45));
             animation: floatCase 4.2s ease-in-out infinite;
             transition: opacity 0.45s ease, transform 0.45s ease, filter 0.55s ease;
         }
-        html[data-theme="light"] .hero-case { filter: drop-shadow(0 0 0.6px rgba(0,0,0,0.55)) drop-shadow(0 14px 16px rgba(0,0,0,0.14)); }
+        html[data-theme="light"] .hero-case { filter: drop-shadow(0 0 0.6px rgba(0,0,0,0.35)); }
+        .gift-wrap::after {
+            content: ""; position: absolute; bottom: 16px; left: 50%; width: 132px; height: 16px; margin-left: -66px; border-radius: 50%;
+            background: radial-gradient(ellipse at center, var(--floor) 0%, transparent 70%);
+            animation: floorShadow 4.2s ease-in-out infinite;
+        }
+        @keyframes floorShadow {
+            0%, 100% { transform: scaleX(1); opacity: 1; }
+            50% { transform: scaleX(0.78); opacity: 0.55; }
+        }
         @keyframes floatCase {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -208,9 +219,15 @@
             margin-top: 8px; height: 4px; border-radius: 99px; background: var(--line); overflow: hidden;
         }
         .timer-bar i {
-            display: block; height: 100%; width: 100%; transform-origin: left center;
-            background: var(--text); border-radius: 99px; transition: background-color 0.55s ease;
+            position: relative; display: block; height: 100%; width: 0; overflow: hidden;
+            background: var(--text); border-radius: 99px; transition: width 1s linear, background-color 0.55s ease;
         }
+        .timer-bar i::after {
+            content: ""; position: absolute; inset: 0; width: 40%;
+            background: linear-gradient(90deg, transparent, var(--shine), transparent);
+            animation: barShine 2.2s ease-in-out infinite;
+        }
+        @keyframes barShine { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
 
         .section { padding: 16px 20px 24px; }
         .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
@@ -233,8 +250,8 @@
             to { opacity: 1; transform: none; }
         }
         .case-art-wrap { height: 104px; display: grid; place-items: center; margin-bottom: 6px; }
-        .case-art { width: 116px; height: 104px; object-fit: contain; background: transparent; animation: floatCase 4.8s ease-in-out infinite; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.35)); }
-        html[data-theme="light"] .case-art { filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.55)) drop-shadow(0 8px 10px rgba(0,0,0,0.12)); }
+        .case-art { width: 116px; height: 104px; object-fit: contain; background: transparent; animation: floatCase 4.8s ease-in-out infinite; }
+        html[data-theme="light"] .case-art { filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.35)); }
         .case-card:nth-child(2) .case-art { animation-delay: 0.6s; }
         .case-card:nth-child(3) .case-art { animation-delay: 1.2s; }
         .case-card:nth-child(4) .case-art { animation-delay: 1.8s; }
@@ -323,6 +340,102 @@
         .num-input { -moz-appearance: textfield; width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 15px; color: var(--text); font-family: var(--font-ui); font-size: 22px; text-align: center; margin-bottom: 15px; font-weight: 500; outline: none; }
         .pay-btn { background: var(--cta-bg); color: var(--cta-fg); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 8px; }
         .cancel-btn { background: none; border: none; color: var(--muted); margin-top: 6px; font-size: 14px; font-weight: 400; cursor: pointer; }
+
+        .live { margin: 10px 0 4px; display: flex; align-items: center; gap: 10px; padding: 0 0 0 20px; overflow: hidden; }
+        .live-tag { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 11px; font-weight: 500; letter-spacing: 1.4px; padding: 7px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+        .live-tag i { width: 6px; height: 6px; border-radius: 50%; background: #ff4d4d; display: block; animation: liveDot 1.2s ease-in-out infinite; }
+        .live-track { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 88%, transparent); }
+        .live-row { display: flex; gap: 8px; width: max-content; }
+        .live-item { flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; position: relative; animation: liveIn 0.5s ease both; }
+        .live-item img { width: 34px; height: 34px; object-fit: contain; }
+        .live-item b { position: absolute; bottom: -1px; right: -1px; font-family: var(--font-ui); font-size: 8.5px; font-weight: 500; padding: 1px 4px; border-radius: 6px; background: var(--cta-bg); color: var(--cta-fg); }
+        @keyframes liveIn { from { opacity: 0; transform: translateX(-24px) scale(0.6); } to { opacity: 1; transform: none; } }
+
+        .modes { padding: 14px 20px 8px; display: grid; gap: 10px; }
+        .mode {
+            position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 84px;
+            padding: 14px 16px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); color: var(--text);
+            text-align: left; cursor: pointer; box-shadow: var(--shadow); animation: cardIn 0.5s ease both;
+            transition: background-color 0.55s ease, border-color 0.55s ease, transform 0.25s ease;
+        }
+        .mode:active { transform: scale(0.98); }
+        .mode::before {
+            content: ""; position: absolute; right: -40px; top: 50%; width: 190px; height: 190px; margin-top: -95px; border-radius: 50%;
+            border: 1px solid var(--orbit); box-shadow: inset 0 0 0 26px transparent, 0 0 0 26px transparent;
+            background: radial-gradient(circle at center, var(--glow), transparent 62%);
+        }
+        .mode::after { content: ""; position: absolute; right: -6px; top: 50%; width: 122px; height: 122px; margin-top: -61px; border-radius: 50%; border: 1px dashed var(--orbit); animation: spin 40s linear infinite; }
+        .mode-num { font-family: var(--font-ui); font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 1px; width: 18px; flex-shrink: 0; }
+        .mode-body { position: relative; z-index: 1; flex: 1; min-width: 0; }
+        .mode-title { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; }
+        .mode-sub { margin-top: 3px; font-size: 13px; color: var(--muted); }
+        .mode-chip { display: inline-block; margin-top: 6px; font-family: var(--font-ui); font-size: 10.5px; font-weight: 500; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+        .mode-chip.on { background: var(--cta-bg); color: var(--cta-fg); border-color: transparent; }
+        .mode-art { position: relative; z-index: 1; width: 66px; height: 66px; object-fit: contain; flex-shrink: 0; margin-right: 6px; animation: floatCase 4.6s ease-in-out infinite; }
+        .mode.soon .mode-art { filter: grayscale(1); opacity: 0.55; }
+        .mode:nth-child(2) { animation-delay: 0.05s; } .mode:nth-child(3) { animation-delay: 0.1s; } .mode:nth-child(4) { animation-delay: 0.15s; }
+        .mode:nth-child(5) { animation-delay: 0.2s; } .mode:nth-child(6) { animation-delay: 0.25s; }
+        .mode:nth-child(2) .mode-art { animation-delay: 0.7s; } .mode:nth-child(4) .mode-art { animation-delay: 1.4s; } .mode:nth-child(6) .mode-art { animation-delay: 2.1s; }
+        .data-note { text-align: center; font-family: var(--font-ui); font-size: 11px; color: var(--muted); padding: 8px 20px 0; opacity: 0.8; }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; margin: 6px 20px 0; padding: 8px 14px 8px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--text); font-size: 14px; font-weight: 700; cursor: pointer; }
+        .back-btn svg { width: 16px; height: 16px; }
+        .case-card .case-hint { font-family: var(--font-ui); font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 8px; }
+
+        .sheet { position: fixed; inset: 0; z-index: 110; display: none; background: rgba(0,0,0,0.72); align-items: flex-end; justify-content: center; }
+        .sheet.show { display: flex; }
+        .sheet-box {
+            width: 100%; max-width: 430px; max-height: 92dvh; overflow-y: auto; background: var(--bg); border: 1px solid var(--line); border-bottom: 0;
+            border-radius: 28px 28px 0 0; padding: 10px 0 calc(24px + env(safe-area-inset-bottom)); animation: sheetUp 0.38s cubic-bezier(.2,.9,.25,1);
+        }
+        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+        .sheet-grip { width: 40px; height: 4px; border-radius: 99px; background: var(--line); margin: 0 auto 10px; }
+        .sheet-head { display: flex; align-items: center; gap: 14px; padding: 0 20px; }
+        .sheet-head img { width: 84px; height: 76px; object-fit: contain; }
+        .sheet-head h3 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; }
+        .sheet-head p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .sheet-close { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 18px; cursor: pointer; flex-shrink: 0; }
+        .roulette { position: relative; margin: 16px 0 12px; height: 112px; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); }
+        .roulette::before, .roulette::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2; pointer-events: none; }
+        .roulette::before { left: 0; background: linear-gradient(90deg, var(--card), transparent); }
+        .roulette::after { right: 0; background: linear-gradient(270deg, var(--card), transparent); }
+        .roulette-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--text); z-index: 3; }
+        .roulette-marker::before, .roulette-marker::after { content: ""; position: absolute; left: -5px; border: 6px solid transparent; }
+        .roulette-marker::before { top: 0; border-top-color: var(--text); }
+        .roulette-marker::after { bottom: 0; border-bottom-color: var(--text); }
+        .roulette-strip { display: flex; gap: 8px; padding: 10px 0; height: 100%; will-change: transform; }
+        .r-item { flex-shrink: 0; width: 88px; height: 92px; border-radius: 16px; background: var(--card-2); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .r-item img { width: 54px; height: 54px; object-fit: contain; }
+        .r-item span { font-family: var(--font-ui); font-size: 10px; font-weight: 500; color: var(--muted); }
+        .r-item.win { border-color: var(--text); animation: winPop 0.6s ease 2; }
+        @keyframes winPop { 50% { transform: scale(1.08); } }
+        .sheet-actions { padding: 0 20px; display: grid; gap: 8px; }
+        .sheet-actions .open-btn { width: 100%; }
+        .sheet-actions .open-btn:disabled { opacity: 0.5; }
+        .demo-note { text-align: center; font-family: var(--font-ui); font-size: 11px; color: var(--muted); }
+        .win-card { display: none; margin: 0 20px 12px; padding: 14px; border-radius: 20px; background: var(--card); border: 1px solid var(--text); align-items: center; gap: 12px; animation: screenIn 0.4s ease; }
+        .win-card.show { display: flex; }
+        .win-card img { width: 56px; height: 56px; object-fit: contain; }
+        .win-card small { display: block; font-family: var(--font-ui); font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+        .win-card b { display: block; font-size: 18px; font-weight: 800; }
+        .win-card em { font-style: normal; font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
+        .contents-head { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 20px 10px; }
+        .contents-head h4 { font-size: 18px; font-weight: 800; }
+        .contents-head span { font-family: var(--font-ui); font-size: 12px; color: var(--muted); }
+        .contents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 20px; }
+        .gift-cell { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 10px 6px 9px; text-align: center; position: relative; }
+        .gift-cell img { width: 56px; height: 56px; object-fit: contain; margin: 0 auto 6px; }
+        .gift-cell h5 { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gift-cell .gp { font-family: var(--font-ui); font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; justify-content: center; gap: 3px; }
+        .gift-cell .gp img { width: 10px; height: 10px; margin: 0; }
+        .gift-cell .gc { position: absolute; top: 7px; right: 8px; font-family: var(--font-ui); font-size: 9.5px; color: var(--muted); }
+        .ton-ico { display: inline-flex; }
+        .ton-ico img { width: 11px; height: 11px; }
+        .inv { padding: 12px 20px 24px; }
+        .inv-sum { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--line); margin-bottom: 12px; }
+        .inv-sum span { font-size: 13px; color: var(--muted); }
+        .inv-sum b { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 5px; }
+        .inv-sum b img { width: 15px; height: 15px; }
     </style>
 </head>
 <body>
@@ -347,7 +460,7 @@
             </div>
         </div>
 
-        <div id="screen-cases" class="screen active">
+        <div id="screen-hub" class="screen active">
             <div class="balances">
                 <div class="bal-card" role="button" onclick="openTopup()">
                     <div class="bal-ico">
@@ -358,7 +471,6 @@
                         <div class="bal-label">Звёзды</div>
                         <div class="bal-val"><span id="balStars">0</span></div>
                     </div>
-                    <span class="chev">→</span>
                 </div>
                 <div class="bal-card" role="button" onclick="openTopup()">
                     <div class="bal-ico">
@@ -369,20 +481,29 @@
                         <div class="bal-label">TON</div>
                         <div class="bal-val"><span id="balTon">0.00</span></div>
                     </div>
-                    <span class="chev">→</span>
                 </div>
             </div>
 
+            <div class="live">
+                <div class="live-tag"><i></i>LIVE</div>
+                <div class="live-track"><div class="live-row" id="liveRow"></div></div>
+            </div>
+            <div class="modes" id="modesList"></div>
+            <div class="data-note" id="dataNote"></div>
+        </div>
+
+        <div id="screen-cases" class="screen">
+            <button class="back-btn" type="button" onclick="showScreen('hub')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Режимы</button>
             <div class="hero">
                 <div class="gift-wrap">
                     <div class="orbit"></div>
                     <div class="orbit"></div>
-                    <img class="hero-case" id="dailyCaseImg" src="img/case_apex.png" alt="">
+                    <img class="hero-case" id="dailyCaseImg" src="img/case_quasar.png" alt="">
                 </div>
                 <div class="daily-badge"><i></i> Кейс дня</div>
                 <h2 id="dailyCaseName">Пульсар</h2>
                 <p>Каждый день новый кейс. Следующая смена в 00:00</p>
-                <button class="open-btn" type="button" onclick="alert('Кейсы в разработке')">Открыть кейс →</button>
+                <button class="open-btn" type="button" onclick="openCase('daily')">Открыть кейс</button>
                 <div class="countdown">
                     <div class="countdown-label">До смены осталось</div>
                     <div class="timer" id="dailyTimer">00:00:00</div>
@@ -393,60 +514,23 @@
             <div class="section" id="casesSection">
                 <div class="section-head">
                     <h3>Доступные кейсы</h3>
-                    <button class="all-link" type="button">Все →</button>
+                    <button class="all-link" type="button">Все</button>
                 </div>
-                <div class="cases" id="casesGrid">
-                    <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/case_orbit.png" alt=""></div>
-                        <h4>Орбита</h4>
-                        <div class="price">
-                            <img class="ton-dark" src="img/ton_white.png" alt="">
-                            <img class="ton-light" src="img/ton_black.png" alt="">
-                            0.15
-                        </div>
-                        <button class="case-open" type="button">Открыть →</button>
-                    </div>
-                    <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/case_nebula.png" alt=""></div>
-                        <h4>Небула</h4>
-                        <div class="price">
-                            <img class="ton-dark" src="img/ton_white.png" alt="">
-                            <img class="ton-light" src="img/ton_black.png" alt="">
-                            0.45
-                        </div>
-                        <button class="case-open" type="button">Открыть →</button>
-                    </div>
-                    <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/case_apex.png" alt=""></div>
-                        <h4>Апекс</h4>
-                        <div class="price">
-                            <img class="ton-dark" src="img/ton_white.png" alt="">
-                            <img class="ton-light" src="img/ton_black.png" alt="">
-                            0.80
-                        </div>
-                        <button class="case-open" type="button">Открыть →</button>
-                    </div>
-                    <div class="case-card" onclick="alert('Кейсы в разработке')">
-                        <div class="case-art-wrap"><img class="case-art" src="img/case_sirius.png" alt=""></div>
-                        <h4>Сириус</h4>
-                        <div class="price">
-                            <img class="ton-dark" src="img/ton_white.png" alt="">
-                            <img class="ton-light" src="img/ton_black.png" alt="">
-                            0.30
-                        </div>
-                        <button class="case-open" type="button">Открыть →</button>
-                    </div>
-                </div>
+                <div class="cases" id="casesGrid"></div>
             </div>
         </div>
 
         <div id="screen-collection" class="screen">
-            <div class="empty-state">
+            <div class="inv" id="invFull" style="display:none">
+                <div class="inv-sum"><span>Подарков: <span id="invCount">0</span></span><b><span id="invTotal">0</span><span class="ton-ico"><img class="ton-dark" src="img/ton_white.png" alt=""><img class="ton-light" src="img/ton_black.png" alt=""></span></b></div>
+                <div class="contents" id="invGrid" style="padding:0"></div>
+            </div>
+            <div class="empty-state" id="invEmpty">
                 <img class="empty-ico ton-dark" src="img/star_white.png" alt="">
                 <img class="empty-ico ton-light" src="img/star_black.png" alt="">
                 <h3>Пока пусто</h3>
                 <p>Открой кейс, и подарки появятся здесь</p>
-                <button class="open-btn" type="button" onclick="showScreen('cases')">К кейсам →</button>
+                <button class="open-btn" type="button" onclick="showScreen('cases')">К кейсам</button>
             </div>
         </div>
         <div id="screen-profile" class="screen">
@@ -473,7 +557,6 @@
                     </div>
                     <button class="set-row" type="button" onclick="openTopup()">
                         <span>Пополнить баланс</span>
-                        <span class="set-val">→</span>
                     </button>
                     <button class="set-row" type="button" onclick="alert('Напиши в поддержку: @cosmos')">
                         <span>Поддержка</span>
@@ -489,9 +572,9 @@
     </div>
 
     <nav class="tabbar">
-        <button class="tab active" id="tab-cases" type="button" onclick="showScreen('cases')">
+        <button class="tab active" id="tab-hub" type="button" onclick="showScreen('hub')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2.5"/><path d="M2 8h20M12 8v13M12 8c-1.6-3.6-6-4.4-6-1.6C6 8 9 8 12 8zM12 8c1.6-3.6 6-4.4 6-1.6C18 8 15 8 12 8z"/></svg>
-            Кейсы
+            Игры
         </button>
         <button class="tab" id="tab-collection" type="button" onclick="showScreen('collection')">
             <img class="ton-dark" src="img/star_white.png" alt="">
@@ -522,28 +605,46 @@
         </div>
     </div>
 
+    <div class="sheet" id="caseSheet" onclick="if (event.target === this) closeCase()">
+        <div class="sheet-box">
+            <div class="sheet-grip"></div>
+            <div class="sheet-head">
+                <img id="sheetImg" src="img/case_quasar.png" alt="">
+                <div><h3 id="sheetName">Кейс</h3><p id="sheetPrice"></p></div>
+                <button class="sheet-close" type="button" onclick="closeCase()" aria-label="Закрыть">×</button>
+            </div>
+            <div class="roulette"><div class="roulette-marker"></div><div class="roulette-strip" id="rStrip"></div></div>
+            <div class="win-card" id="winCard"><img id="winImg" src="" alt=""><div><small>ВЫПАЛО</small><b id="winName"></b><em id="winPrice"></em></div></div>
+            <div class="sheet-actions">
+                <button class="open-btn" id="spinBtn" type="button" onclick="spinCase()">Открыть</button>
+                <div class="demo-note">Демо-режим: баланс не списывается</div>
+            </div>
+            <div class="contents-head"><h4>Что внутри</h4><span id="sheetCount"></span></div>
+            <div class="contents" id="sheetContents"></div>
+        </div>
+    </div>
+
 <script>
-    const SUPABASE_URL = 'https://oawmltaiiryankxvtzrc.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
+    const SUPABASE_URL = 'https://jtrnovdqjsdsphegxzmf.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IXkvmGywEw0IRe-QsE82jw_K2EpmwBi';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const RECEIVER = "UQBYFdivQebVdF1Q2moiL42d_zPtjXrMiuj9HmmzCPTuZy8m";
     const TON_RATE = 100;
 
     const DAILY_CASES = [
-        { name: 'Пульсар', img: 'img/case_apex.png' },
-        { name: 'Квазар', img: 'img/case_nebula.png' },
-        { name: 'Зенит', img: 'img/case_sirius.png' },
-        { name: 'Орион', img: 'img/case_orbit.png' },
-        { name: 'Вега', img: 'img/case_nebula.png' },
-        { name: 'Альтаир', img: 'img/case_apex.png' },
-        { name: 'Комета', img: 'img/case_sirius.png' }
+        { name: 'Квазар', img: 'img/case_quasar.png' },
+        { name: 'Орбита', img: 'img/case_orbit.png' },
+        { name: 'Небула', img: 'img/case_nebula.png' },
+        { name: 'Апекс', img: 'img/case_apex.png' },
+        { name: 'Сириус', img: 'img/case_sirius.png' }
     ];
 
     let userStars = 0;
     let telegramId = null;
     let tonConnectUI = null;
     let lastDayKey = null;
+    let dailyCase = null;
     const tg = window.Telegram?.WebApp;
 
     if (tg) {
@@ -612,10 +713,15 @@
 
     function showScreen(name) {
         haptic();
-        ['cases', 'collection', 'profile'].forEach((id) => {
+        ['hub', 'cases', 'collection', 'profile'].forEach((id) => {
             document.getElementById('screen-' + id).classList.toggle('active', id === name);
-            document.getElementById('tab-' + id).classList.toggle('active', id === name);
         });
+        const tab = name === 'cases' ? 'hub' : name;
+        ['hub', 'collection', 'profile'].forEach((id) => {
+            document.getElementById('tab-' + id).classList.toggle('active', id === tab);
+        });
+        if (name === 'collection') renderInventory();
+        window.scrollTo(0, 0);
     }
 
     function renderBalance() {
@@ -626,7 +732,7 @@
     }
 
     function dayKey(date) {
-        return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+        return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
     }
 
     function msUntilMidnight(date) {
@@ -646,12 +752,14 @@
         const img = document.getElementById('dailyCaseImg');
         const title = document.getElementById('dailyCaseName');
         if (title) title.textContent = item.name;
+        dailyCase = item;
         if (img) {
             img.src = item.img;
             if (animate) {
                 img.classList.remove('swap');
                 void img.offsetWidth;
                 img.classList.add('swap');
+                img.addEventListener('animationend', () => img.classList.remove('swap'), { once: true });
             }
         }
         lastDayKey = key;
@@ -667,7 +775,7 @@
         const timer = document.getElementById('dailyTimer');
         const bar = document.getElementById('dailyBar');
         if (timer) timer.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-        if (bar) bar.style.transform = 'scaleX(' + (left / total) + ')';
+        if (bar) bar.style.width = ((1 - left / total) * 100).toFixed(3) + '%';
         const key = dayKey(now);
         if (lastDayKey !== null && key !== lastDayKey) applyDailyCase(true);
     }
@@ -708,13 +816,312 @@
         if (nameEl) nameEl.textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Игрок';
         if (idEl) idEl.textContent = user.username ? '@' + user.username : 'ID ' + user.id;
         renderAvatar(user);
-        const { data } = await supabase.from('players').select('*').eq('telegram_id', telegramId).single();
+        const { data } = await supabase.from('players').select('*').eq('telegram_id', telegramId).maybeSingle();
         if (data) {
             userStars = data.stars;
             renderBalance();
+        } else {
+            await supabase.from('players').insert({ telegram_id: telegramId, username: user.username || null, stars: 0 });
         }
     }
     loadUser();
+
+    const CASE_DEFS = {
+        orbit:  { name: 'Орбита', img: 'img/case_orbit.png',  base: [5, 7],    jack: [15, 40],    n: 9 },
+        nebula: { name: 'Небула', img: 'img/case_nebula.png', base: [7, 20],   jack: [40, 120],   n: 9 },
+        apex:   { name: 'Апекс',  img: 'img/case_apex.png',   base: [20, 80],  jack: [150, 500],  n: 9 },
+        sirius: { name: 'Сириус', img: 'img/case_sirius.png', base: [80, 400], jack: [800, 3000], n: 9 },
+        quasar: { name: 'Квазар', img: 'img/case_quasar.png', base: [5, 15],   jack: [300, 8000], n: 12 },
+        free:   { name: 'Бесплатный', img: 'img/gifts/lootbag.webp', base: [5, 5.5], jack: [10, 30], n: 9, free: true }
+    };
+    const MODES = [
+        { title: 'Бесплатно', sub: 'Один кейс каждые 24 часа', art: 'img/gifts/lootbag.webp', go: () => openCase('free') },
+        { title: 'Кейсы', sub: '', art: 'img/case_quasar.png', go: () => showScreen('cases'), live: true },
+        { title: 'Апгрейд', sub: 'Улучши подарок до редкого', art: 'img/gifts/magicpotion.webp' },
+        { title: 'Краш', sub: 'Забери выигрыш до взрыва', art: 'img/gifts/stellarrocket.webp' },
+        { title: 'Мины', sub: 'Открывай безопасные клетки', art: 'img/gifts/electricskull.webp' },
+        { title: 'Плинко', sub: 'Шарик решает, что выпадет', art: 'img/gifts/crystalball.webp' }
+    ];
+    const TON_IMG = '<span class="ton-ico"><img class="ton-dark" src="img/ton_white.png" alt=""><img class="ton-light" src="img/ton_black.png" alt=""></span>';
+    let GIFTS = [];
+    let catalogMeta = { updated: '', source: 'fragment.com' };
+    const casePools = {};
+    let currentCase = null;
+    let spinning = false;
+
+    function fmtTon(n) {
+        if (n >= 1000) return Math.round(n).toLocaleString('ru-RU');
+        if (n >= 10) return String(Math.round(n));
+        return String(Math.round(n * 100) / 100);
+    }
+    function giftThumb(g) { return 'img/gifts/' + g.slug + '.webp'; }
+    function esc(t) { return String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    async function loadCatalog() {
+        try {
+            const { data, error } = await supabase.from('gift_collections').select('slug,name,supply,floor_ton,avg_ton,updated_at');
+            if (!error && data && data.length) {
+                GIFTS = data.map((r) => ({ slug: r.slug, name: r.name, supply: r.supply, floor: Number(r.floor_ton), avg: Number(r.avg_ton) }));
+                catalogMeta = { updated: (data[0].updated_at || '').slice(0, 10), source: 'fragment.com', db: true };
+            }
+        } catch (e) {}
+        if (!GIFTS.length) {
+            try {
+                const res = await fetch('data/gifts.json');
+                const json = await res.json();
+                GIFTS = json.gifts;
+                catalogMeta = { updated: json.updated, source: json.source };
+            } catch (e) { console.error('Catalog error', e); }
+        }
+        GIFTS = GIFTS.filter((g) => g.avg > 0).sort((a, b) => a.avg - b.avg);
+        buildPools();
+        renderModes();
+        renderCaseGrid();
+        renderLiveInit();
+        const note = document.getElementById('dataNote');
+        if (note && catalogMeta.updated) {
+            const d = catalogMeta.updated.split('-').reverse().join('.');
+            note.textContent = GIFTS.length + ' коллекций · цены Fragment на ' + d;
+        }
+    }
+
+    function pickSpread(list, n) {
+        if (list.length <= n) return list.slice();
+        const out = [];
+        for (let i = 0; i < n; i++) out.push(list[Math.round(i * (list.length - 1) / (n - 1))]);
+        return [...new Set(out)];
+    }
+
+    function buildPools() {
+        Object.entries(CASE_DEFS).forEach(([key, def]) => {
+            const inRange = (r) => GIFTS.filter((g) => g.avg >= r[0] && g.avg <= r[1]);
+            const jackN = key === 'quasar' ? 3 : 2;
+            const items = [...pickSpread(inRange(def.base), def.n - jackN), ...pickSpread(inRange(def.jack), jackN)];
+            const weights = items.map((g) => 1 / Math.pow(g.avg, 1.1));
+            const sum = weights.reduce((a, b) => a + b, 0) || 1;
+            const pool = items.map((g, i) => ({ ...g, chance: weights[i] / sum }));
+            const ev = pool.reduce((a, g) => a + g.avg * g.chance, 0);
+            casePools[key] = { pool, price: def.free ? 0 : Math.round(ev * 1.08 * 100) / 100, max: Math.max(...pool.map((g) => g.avg)) };
+        });
+    }
+
+    function freeReady() {
+        try { return localStorage.getItem('cosmos-free') !== String(dayKey(new Date())); } catch (e) { return true; }
+    }
+
+    function renderModes() {
+        const box = document.getElementById('modesList');
+        if (!box) return;
+        box.innerHTML = '';
+        MODES.forEach((m, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mode' + (m.go ? '' : ' soon');
+            let chip;
+            if (i === 0) chip = freeReady() ? '<span class="mode-chip on">Доступен</span>' : '<span class="mode-chip">Завтра снова</span>';
+            else if (m.go) chip = '<span class="mode-chip on">' + Object.keys(CASE_DEFS).filter((k) => !CASE_DEFS[k].free).length + ' кейсов</span>';
+            else chip = '<span class="mode-chip">Скоро</span>';
+            btn.innerHTML = '<span class="mode-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+                '<div class="mode-body"><div class="mode-title">' + m.title + '</div>' +
+                (m.sub ? '<div class="mode-sub">' + m.sub + '</div>' : '<div class="mode-sub">Реальные подарки Telegram</div>') + chip + '</div>' +
+                '<img class="mode-art" src="' + m.art + '" alt="">';
+            btn.onclick = () => {
+                haptic();
+                if (m.go) m.go();
+                else if (tg?.showAlert) tg.showAlert(m.title + ': режим скоро появится');
+                else alert(m.title + ': режим скоро появится');
+            };
+            box.appendChild(btn);
+        });
+    }
+
+    function renderCaseGrid() {
+        const grid = document.getElementById('casesGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        ['orbit', 'nebula', 'apex', 'sirius'].forEach((key) => {
+            const def = CASE_DEFS[key];
+            const p = casePools[key];
+            const card = document.createElement('div');
+            card.className = 'case-card';
+            card.onclick = () => openCase(key);
+            card.innerHTML = '<div class="case-art-wrap"><img class="case-art" src="' + def.img + '" alt=""></div>' +
+                '<h4>' + def.name + '</h4>' +
+                '<div class="price">' + TON_IMG + ' ' + fmtTon(p.price) + '</div>' +
+                '<div class="case-hint">до ' + fmtTon(p.max) + ' TON</div>' +
+                '<button class="case-open" type="button">Открыть</button>';
+            grid.appendChild(card);
+        });
+    }
+
+    function weightedPick(pool) {
+        let r = Math.random();
+        for (const g of pool) { r -= g.chance; if (r <= 0) return g; }
+        return pool[pool.length - 1];
+    }
+
+    function liveItem(g) {
+        const el = document.createElement('div');
+        el.className = 'live-item';
+        el.innerHTML = '<img src="' + giftThumb(g) + '" alt=""><b>' + fmtTon(g.avg) + '</b>';
+        return el;
+    }
+
+    function pushLive(g) {
+        const row = document.getElementById('liveRow');
+        if (!row) return;
+        row.prepend(liveItem(g));
+        while (row.children.length > 30) row.lastChild.remove();
+    }
+
+    function randomLiveGift() {
+        const keys = ['orbit', 'orbit', 'nebula', 'nebula', 'apex', 'sirius', 'quasar', 'free'];
+        const p = casePools[keys[Math.floor(Math.random() * keys.length)]];
+        return p && p.pool.length ? weightedPick(p.pool) : null;
+    }
+
+    function renderLiveInit() {
+        for (let i = 0; i < 24; i++) { const g = randomLiveGift(); if (g) pushLive(g); }
+        const loop = () => {
+            const g = randomLiveGift();
+            if (g) pushLive(g);
+            setTimeout(loop, 1800 + Math.random() * 3200);
+        };
+        setTimeout(loop, 2000);
+    }
+
+    function caseKeyByDaily() {
+        const item = dailyCase || DAILY_CASES[dayKey(new Date()) % DAILY_CASES.length];
+        return Object.keys(CASE_DEFS).find((k) => CASE_DEFS[k].name === item.name) || 'quasar';
+    }
+
+    function rItem(g) {
+        const el = document.createElement('div');
+        el.className = 'r-item';
+        el.innerHTML = '<img src="' + giftThumb(g) + '" alt=""><span>' + fmtTon(g.avg) + ' TON</span>';
+        return el;
+    }
+
+    function fillStrip(pool, winner) {
+        const strip = document.getElementById('rStrip');
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateX(0)';
+        strip.innerHTML = '';
+        for (let i = 0; i < 64; i++) strip.appendChild(rItem(i === 52 && winner ? winner : weightedPick(pool)));
+        void strip.offsetWidth;
+        return strip;
+    }
+
+    function centerOffset(index) {
+        const box = document.querySelector('.roulette');
+        const step = 96;
+        return index * step + 44 - box.clientWidth / 2;
+    }
+
+    function openCase(key) {
+        if (!GIFTS.length) return;
+        if (key === 'daily') key = caseKeyByDaily();
+        haptic();
+        currentCase = key;
+        const def = CASE_DEFS[key];
+        const p = casePools[key];
+        document.getElementById('sheetImg').src = def.img;
+        document.getElementById('sheetName').textContent = def.name;
+        document.getElementById('sheetPrice').innerHTML = def.free ? 'Бесплатно раз в сутки' : 'Цена ' + fmtTon(p.price) + ' TON · до ' + fmtTon(p.max) + ' TON';
+        document.getElementById('sheetCount').textContent = p.pool.length + ' подарков';
+        document.getElementById('winCard').classList.remove('show');
+        const btn = document.getElementById('spinBtn');
+        const blocked = def.free && !freeReady();
+        btn.disabled = blocked;
+        btn.textContent = blocked ? 'Доступно завтра' : (def.free ? 'Открыть бесплатно' : 'Открыть за ' + fmtTon(p.price) + ' TON');
+        const list = document.getElementById('sheetContents');
+        list.innerHTML = '';
+        [...p.pool].sort((a, b) => b.avg - a.avg).forEach((g) => {
+            const c = document.createElement('div');
+            c.className = 'gift-cell';
+            const pct = g.chance * 100;
+            c.innerHTML = '<span class="gc">' + (pct < 1 ? pct.toFixed(2) : pct.toFixed(1)) + '%</span><img src="' + giftThumb(g) + '" alt="">' +
+                '<h5>' + esc(g.name) + '</h5><div class="gp">' + TON_IMG + fmtTon(g.avg) + '</div>';
+            list.appendChild(c);
+        });
+        document.getElementById('caseSheet').classList.add('show');
+        const strip = fillStrip(p.pool, null);
+        strip.style.transform = 'translateX(' + (-centerOffset(8)) + 'px)';
+    }
+
+    function closeCase() {
+        if (spinning) return;
+        document.getElementById('caseSheet').classList.remove('show');
+    }
+
+    function spinCase() {
+        if (spinning || !currentCase) return;
+        const def = CASE_DEFS[currentCase];
+        const p = casePools[currentCase];
+        if (def.free && !freeReady()) return;
+        spinning = true;
+        haptic('medium');
+        const btn = document.getElementById('spinBtn');
+        btn.disabled = true;
+        btn.textContent = 'Крутим...';
+        document.getElementById('winCard').classList.remove('show');
+        const winner = weightedPick(p.pool);
+        const strip = fillStrip(p.pool, winner);
+        const jitter = Math.round((Math.random() - 0.5) * 60);
+        strip.style.transition = 'transform 6s cubic-bezier(0.08, 0.62, 0.12, 1)';
+        strip.style.transform = 'translateX(' + (-(centerOffset(52) + jitter)) + 'px)';
+        let ticks = 0;
+        const tick = setInterval(() => { if (++ticks < 18) haptic('light'); }, 280);
+        strip.addEventListener('transitionend', () => {
+            clearInterval(tick);
+            spinning = false;
+            strip.children[52].classList.add('win');
+            try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {}
+            document.getElementById('winImg').src = giftThumb(winner);
+            document.getElementById('winName').textContent = winner.name;
+            document.getElementById('winPrice').textContent = 'Средняя цена ' + fmtTon(winner.avg) + ' TON';
+            document.getElementById('winCard').classList.add('show');
+            addToInventory(winner);
+            pushLive(winner);
+            if (def.free) {
+                try { localStorage.setItem('cosmos-free', String(dayKey(new Date()))); } catch (e) {}
+                btn.textContent = 'Доступно завтра';
+                renderModes();
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Открыть ещё за ' + fmtTon(p.price) + ' TON';
+            }
+        }, { once: true });
+    }
+
+    function getInventory() {
+        try { return JSON.parse(localStorage.getItem('cosmos-inv') || '[]'); } catch (e) { return []; }
+    }
+
+    function addToInventory(g) {
+        const inv = getInventory();
+        inv.unshift({ slug: g.slug, name: g.name, avg: g.avg, t: Date.now() });
+        try { localStorage.setItem('cosmos-inv', JSON.stringify(inv.slice(0, 200))); } catch (e) {}
+    }
+
+    function renderInventory() {
+        const inv = getInventory();
+        document.getElementById('invEmpty').style.display = inv.length ? 'none' : '';
+        document.getElementById('invFull').style.display = inv.length ? '' : 'none';
+        if (!inv.length) return;
+        document.getElementById('invCount').textContent = inv.length;
+        document.getElementById('invTotal').textContent = fmtTon(inv.reduce((a, g) => a + g.avg, 0));
+        const grid = document.getElementById('invGrid');
+        grid.innerHTML = '';
+        inv.forEach((g) => {
+            const c = document.createElement('div');
+            c.className = 'gift-cell';
+            c.innerHTML = '<img src="' + giftThumb(g) + '" alt=""><h5>' + esc(g.name) + '</h5><div class="gp">' + TON_IMG + fmtTon(g.avg) + '</div>';
+            grid.appendChild(c);
+        });
+    }
+
+    loadCatalog();
 
     function setPayStatus(text, kind) {
         const el = document.getElementById('payStatus');

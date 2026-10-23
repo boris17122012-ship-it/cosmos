@@ -37,8 +37,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing telegramId or collectionSlug' });
         }
         try {
-            const supabaseUrl = 'https://oawmltaiiryankxvtzrc.supabase.co';
-            const supabaseKey = 'sb_publishable_ITLPWUq4nnEEe1VGmEmuJw_dLjOvozA';
+            const supabaseUrl = 'https://jtrnovdqjsdsphegxzmf.supabase.co';
+            const supabaseKey = 'sb_publishable_IXkvmGywEw0IRe-QsE82jw_K2EpmwBi';
 
             const r = await fetch(`${supabaseUrl}/rest/v1/pending_deliveries`, {
                 method: 'POST',
